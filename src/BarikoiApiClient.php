@@ -74,9 +74,7 @@ class BarikoiApiClient
     {
         $this->apiKey = $apiKey;
 
-        $this->client = new Client([
-            'handler' => $this->createGuzzleHandler(),
-        ]);
+        $this->client = new Client();
         $this->headers = ['headers' => []];
         $this->additionalParams = [];
     }
@@ -395,7 +393,7 @@ class BarikoiApiClient
 
     public function getGeocode($place_id) {
 
-        return $this->get(self::ENDPOINT_SEARCH."/geocode/".$this->restApiKey."/place/".$place_id);
+        return $this->get(self::ENDPOINT_SEARCH."/geocode/".$this->apiKey."/place/".$place_id);
     }
 
   
