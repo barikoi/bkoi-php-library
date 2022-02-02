@@ -1,0 +1,39 @@
+{
+    "name": "barikoi/bkoi-php-library",
+    "description": "Barikoi api integration for php",
+    "type": "library",
+    "license": "Barikoi",
+    "require": {
+      "php": ">=5.4.0",
+      "guzzlehttp/guzzle": "^6.2|^7.0.1",
+      "illuminate/support": "~5.5|~6.0|~7.0|~8.0",
+      "symfony/psr-http-message-bridge": "1.*|2.*"
+    },
+    "require-dev": {
+      "vlucas/phpdotenv": "^2.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Barikoi\\BkoiPhpLibrary\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "saad",
+            "email": "saad@barikoi.com"
+        }
+    ],
+    "extra": {
+      "laravel": {
+        "providers": [
+          "Barikoi\\BkoiPhpLibrary\\BarikoiApiServiceProvider"
+        ],
+        "aliases": {
+          "BkoiApi": "Barikoi\\BkoiPhpLibrary\\BarikoiApiFacade"
+        }
+      }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true 
+  }
+  
