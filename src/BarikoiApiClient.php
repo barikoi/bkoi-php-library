@@ -124,11 +124,6 @@ class BarikoiApiClient
 
         return $this;
     }
-    
-    public function getGeocode($place_id) {
-
-        return $this->get(self::ENDPOINT_SEARCH."/geocode/".$this->apiKey."/place/".$place_id);
-    }
 
     public function autoComplete($query, $area = null,$city = null,$bangla=null)
     {
@@ -139,18 +134,57 @@ class BarikoiApiClient
             'city' => $city,
             'bangla' => $bangla
         ];
-        $params = array_merge($params, $this->additionalParams);
-        return $this->get(self::ENDPOINT_SEARCH. "/autocomplete/place", $params);
+        $this->addParams($params);
+        return $this->get(self::ENDPOINT_SEARCH. "/autocomplete/place");
     }
 
-    public function reverseGeocode($latitude, $longitude)
+    public function reverseGeocode($latitude, $longitude, $area = null, $union = null, $pauroshova = null, $sub_district = null, $district = null, $country = null, $division = null, $location_type = null, $address = null, $bangla = null)
     {
         // Implement reverse geocoding API request
+        $params = [
+            'api_key' => $this->apiKey,
+            'longitude' => $longitude,
+            'latitude' => $latitude,
+            'district' => $district,
+            'post_code' => $post_code,
+            'country' => $country,
+            'sub_district' => $sub_district,
+            'union' => $union,
+            'pauroshova' => $pauroshova,
+            'location_type' => $location_type,
+            'division' => $division,
+            'address' => $address,
+            'area' => $area,
+            'bangla' => $bangla
+        ];
+        $this->addParams($params);
+        return $this->get(self::ENDPOINT_SEARCH. "/reverse/geocode");
     }
 
-    public function nearbyPlaces($latitude, $longitude)
+    public function nearbyPlaces($latitude, $longitude, $radius, $limit)
     {
         // Implement nearby places API request
+        $params = [
+            'api_key' => $this->apiKey,
+            'longitude' => $longitude,
+            'latitude' => $latitude
+        ];
+        $this->addParams($params);
+        return $this->get(self::ENDPOINT_SEARCH. "/nearby/".$radius."/".$limit);
+    }
+
+    public function rupantor($query, $thana = null, $district = null, $bangla = null)
+    {
+        // Implement nearby places API request
+        $params = [
+            'api_key' => $this->apiKey,
+            'q' => $query,
+            'district' => $district,
+            'thana' => $thana,
+            'bangla' => $bangla
+        ];
+        $this->addParams($params);
+        return $this->post(self::ENDPOINT_SEARCH. "/rupantor/geocode");
     }
 
     public function post($endPoint) {
@@ -158,7 +192,9 @@ class BarikoiApiClient
             $promise = $this->client->postAsync(self::API_URL . $endPoint, $this->headers);
             return (is_callable($this->requestCallback) ? $promise->then($this->requestCallback) : $promise);
         }
-        return $this->client->post(self::API_URL . $endPoint, $this->headers);
+        $data = $this->client->post(self::API_URL . $endPoint, ["form_params" => $this->additionalParams, $this->headers]);
+        $data = json_decode($data->getBody()->getContents());
+        return $data;
     }
 
     public function put($endPoint) {
@@ -170,7 +206,9 @@ class BarikoiApiClient
     }
 
     public function get($endPoint) {
-        return $this->client->get(self::API_URL . $endPoint, $this->headers);
+        $data = $this->client->get(self::API_URL . $endPoint,["query" => $this->additionalParams, $this->headers]);
+        $data = json_decode($data->getBody()->getContents());
+        return $data;
     }
 
     public function delete($endPoint) {
