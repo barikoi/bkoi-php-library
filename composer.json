@@ -1,0 +1,25 @@
+{
+    "name": "barikoi/barikoiapis",
+    "description": "Bangladeshi location data provider API library from barikoi.com",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Barikoi\\Barikoiapis\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "abdullahsad"
+        }
+    ],
+    "require": {
+        "php": "^7.4",
+        "guzzlehttp/guzzle": "^6.3|^7.0",
+        "illuminate/support": "^8.0",
+        "symfony/psr-http-message-bridge": "^2.0"
+    },
+    "require-dev": {
+        "vlucas/phpdotenv": "^4.0"
+    }
+}
