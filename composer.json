@@ -16,7 +16,6 @@
     "require": {
         "php": "^7.4|^8.0",
         "guzzlehttp/guzzle": "^6.3|^7.0",
-        "illuminate/support": "^8.0",
         "symfony/psr-http-message-bridge": "^2.0"
     },
     "require-dev": {
