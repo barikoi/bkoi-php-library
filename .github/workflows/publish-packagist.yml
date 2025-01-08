@@ -1,0 +1,33 @@
+name: Publish to Packagist
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish-packagist:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Validate semantic versioning
+        id: validate
+        run: |
+          echo "Checking semantic versioning for ${GITHUB_REF##*/}"
+          if [[ ! "${GITHUB_REF##*/}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Tag ${GITHUB_REF##*/} does not follow semantic versioning (vMAJOR.MINOR.PATCH)"
+            exit 1
+          fi
+          echo "Semantic versioning validation passed."
+
+      - name: Notify Packagist
+        env:
+          PACKAGIST_TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
+        run: |
+          curl -X POST https://packagist.org/api/update-package \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer $PACKAGIST_TOKEN" \
+          -d '{"repository":"https://github.com/${GITHUB_REPOSITORY}"}'
