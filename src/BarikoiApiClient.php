@@ -140,7 +140,6 @@ class BarikoiApiClient
 
     public function reverseGeocode($latitude, $longitude, $area = null, $union = null, $pauroshova = null, $sub_district = null, $district = null, $country = null, $division = null, $location_type = null, $address = null, $bangla = null,$post_code = null)
     {
-        // Implement reverse geocoding API request
         $params = [
             'api_key' => $this->apiKey,
             'longitude' => $longitude,
