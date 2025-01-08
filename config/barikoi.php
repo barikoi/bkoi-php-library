@@ -12,4 +12,5 @@ return array(
 	|
 	*/
     'api_key' => env('BARIKOI_API_KEY'),
+	
 );
