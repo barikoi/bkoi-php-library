@@ -30,4 +30,4 @@ jobs:
           curl -X POST https://packagist.org/api/update-package \
           -H "Content-Type: application/json" \
           -H "Authorization: Bearer $PACKAGIST_TOKEN" \
-          -d '{"repository":"https://github.com/${GITHUB_REPOSITORY}"}'
+          -d '{"repository":"https://github.com/barikoi/bkoi-php-library"}'
