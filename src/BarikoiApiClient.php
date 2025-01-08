@@ -158,13 +158,12 @@ class BarikoiApiClient
         ];
 
         $this->addParams($params);
-        
+
         return $this->get(self::ENDPOINT_SEARCH. "/reverse/geocode");
     }
 
     public function nearbyPlaces($latitude, $longitude, $radius, $limit)
     {
-        // Implement nearby places API request
         $params = [
             'api_key' => $this->apiKey,
             'longitude' => $longitude,
