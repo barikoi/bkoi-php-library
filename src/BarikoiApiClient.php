@@ -156,7 +156,9 @@ class BarikoiApiClient
             'area' => $area,
             'bangla' => $bangla
         ];
+
         $this->addParams($params);
+        
         return $this->get(self::ENDPOINT_SEARCH. "/reverse/geocode");
     }
 
