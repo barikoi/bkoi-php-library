@@ -16,13 +16,13 @@ use Illuminate\Support\Facades\Facade;
  * Location Methods (Direct Access):
  * @method static array reverseGeocode(float $longitude, float $latitude, array $options = [])
  * @method static array autocomplete(string $query, array $options = [])
- * @method static array geocode(string $address, array $options = [])
  * @method static array searchPlace(string $query, array $options = [])
- * @method static array getPlaceDetails(string $placeId)
- * @method static array snapToRoad(array $points)
- * @method static array nearby(float $longitude, float $latitude, int $distance = 1000, array $options = [])
- * @method static array nearbyWithCategory(float $longitude, float $latitude, string $category, int $distance = 1000)
- * @method static array nearbyWithTypes(float $longitude, float $latitude, array $types, int $distance = 1000)
+ * @method static array geocode(string $address, array $options = [])
+ * @method static array getPlaceDetails(string $placeCode, array $options = [])
+ * @method static array snapToRoad(float $latitude, float $longitude)
+ * @method static array nearby(float $longitude, float $latitude, float $distance = 0.5, int $limit = 10, array $options = [])
+ * @method static array nearbyWithCategory(float $longitude, float $latitude, string $category, float $distance = 1.0, int $limit = 10)
+ * @method static array nearbyWithTypes(float $longitude, float $latitude, array $types, float $distance = 5.0, int $limit = 5)
  * @method static array pointInPolygon(float $longitude, float $latitude, array $polygon)
  *
  * Route Methods (Direct Access):

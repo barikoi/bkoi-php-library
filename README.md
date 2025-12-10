@@ -34,7 +34,7 @@ php artisan vendor:publish --provider="Vendor\PackageName\PackageNameServiceProv
 
 ```env
 BARIKOI_API_KEY=your_api_key_here
-BARIKOI_BASE_URL=https://barikoi.xyz/v2/api
+BARIKOI_BASE_URL=https://barikoi.xyz/api/v2
 ```
 
 Get your API key from [Barikoi](https://barikoi.com).
@@ -52,8 +52,8 @@ $address = Barikoi::reverseGeocode(90.3572, 23.8067);
 // Convert address to coordinates
 $coordinates = Barikoi::geocode('Dhanmondi, Dhaka');
 
-// Search for places
-$places = Barikoi::searchPlace('restaurant');
+// Get place suggestions
+$places = Barikoi::autocomplete('restaurant');
 
 // Calculate route
 $route = Barikoi::route()->distance(90.3572, 23.8067, 90.3680, 23.8100);
@@ -76,7 +76,6 @@ Complete documentation with parameters, conditions, and error handling for each 
 | - Reverse Geocoding | Convert coordinates to address |
 | - Geocoding (Rupantor) | Convert address to coordinates |
 | - Autocomplete | Place suggestions |
-| - Search Place | Find specific places |
 | - Nearby Search | Find places within radius |
 | - Snap to Road | Correct GPS coordinates |
 | - Point in Polygon | Check point inside area |
@@ -116,7 +115,7 @@ Complete documentation with parameters, conditions, and error handling for each 
 use Vendor\PackageName\Facades\Barikoi;
 
 $address = Barikoi::reverseGeocode(90.3572, 23.8067);
-$places = Barikoi::searchPlace('restaurant');
+$places = Barikoi::autocomplete('restaurant');
 ```
 
 ### Using Dependency Injection
@@ -312,4 +311,4 @@ The MIT License (MIT). See [License File](LICENSE.md) for more information.
 For issues or questions:
 - Create an issue on GitHub
 - Check the detailed API documentation in `docs/` folder
-- Visit [Barikoi Support](https://barikoi.com/support)
+- Direct support is not currently available

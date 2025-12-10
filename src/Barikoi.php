@@ -75,46 +75,50 @@ class Barikoi
         return $this->location()->autocomplete($query, $options);
     }
 
+    // Search for places by query
+    public function searchPlace(string $query, array $options = []): array
+    {
+        return $this->location()->searchPlace($query, $options);
+    }
+
     // Convert address to coordinates
     public function geocode(string $address, array $options = []): array
     {
         return $this->location()->geocode($address, $options);
     }
 
-    // Search for places
-    public function searchPlace(string $query, array $options = []): array
+    // Get place details by place_code
+    // Optional session_id can be provided in options
+    public function getPlaceDetails(string $placeCode, array $options = []): array
     {
-        return $this->location()->searchPlace($query, $options);
-    }
-
-    // Get place details by ID
-    public function getPlaceDetails(string $placeId): array
-    {
-        return $this->location()->getPlaceDetails($placeId);
+        return $this->location()->getPlaceDetails($placeCode, $options);
     }
 
     // Snap GPS coordinates to nearest road
-    public function snapToRoad(array $points): array
+    public function snapToRoad(float $latitude, float $longitude): array
     {
-        return $this->location()->snapToRoad($points);
+        return $this->location()->snapToRoad($latitude, $longitude);
     }
 
     // Find places within radius
-    public function nearby(float $longitude, float $latitude, int $distance = 1000, array $options = []): array
+    // Distance in kilometers (e.g., 0.5 = 500 meters), limit is max results
+    public function nearby(float $longitude, float $latitude, float $distance = 0.5, int $limit = 10, array $options = []): array
     {
-        return $this->location()->nearby($longitude, $latitude, $distance, $options);
+        return $this->location()->nearby($longitude, $latitude, $distance, $limit, $options);
     }
 
     // Find places of specific category nearby
-    public function nearbyWithCategory(float $longitude, float $latitude, string $category, int $distance = 1000): array
+    // Distance in kilometers (e.g., 1.0 = 1000 meters), limit is max results
+    public function nearbyWithCategory(float $longitude, float $latitude, string $category, float $distance = 1.0, int $limit = 10): array
     {
-        return $this->location()->nearbyWithCategory($longitude, $latitude, $category, $distance);
+        return $this->location()->nearbyWithCategory($longitude, $latitude, $category, $distance, $limit);
     }
 
     // Find multiple types of places nearby
-    public function nearbyWithTypes(float $longitude, float $latitude, array $types, int $distance = 1000): array
+    // Distance in kilometers (e.g., 5.0 = 5000 meters), limit is max results
+    public function nearbyWithTypes(float $longitude, float $latitude, array $types, float $distance = 5.0, int $limit = 5): array
     {
-        return $this->location()->nearbyWithTypes($longitude, $latitude, $types, $distance);
+        return $this->location()->nearbyWithTypes($longitude, $latitude, $types, $distance, $limit);
     }
 
     // Check if point is inside polygon

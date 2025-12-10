@@ -12,5 +12,5 @@ return [
 
     'api_key' => env('BARIKOI_API_KEY', ''),
 
-    'base_url' => env('BARIKOI_BASE_URL', 'https://barikoi.xyz/v2/api'),
+    'base_url' => env('BARIKOI_BASE_URL', 'https://barikoi.xyz/api/v2'),
 ];

@@ -29,7 +29,7 @@ Barikoi::reverseGeocode(float $longitude, float $latitude, array $options = [])
 | `district` | boolean | false | Include district name |
 | `post_code` | boolean | false | Include postal code |
 | `country` | boolean | false | Include country |
-| `country_code` | boolean | false | Include country code (may not be supported by all API versions) |
+| `country_code` | string | `bd` | The two-letter country code (ISO Alpha-2) representing the desired country (e.g., `sa` for Saudi Arabia). You can find codes in the ISO Alpha-2 country code standard. |
 | `sub_district` | boolean | false | Include sub-district |
 | `union` | boolean | false | Include union |
 | `pauroshova` | boolean | false | Include pauroshova (municipality) |
@@ -56,7 +56,7 @@ try {
         'district' => true,
         'post_code' => true,
         'country' => true,
-        'country_code' => true,
+        'country_code' => 'sa',
         'sub_district' => true,
         'union' => true,
         'pauroshova' => true,
@@ -93,6 +93,7 @@ try {
         'city' => 'Dhaka',
         'district' => 'Dhaka',  // if requested
         'postCode' => 1000,      // if requested
+        'country_code' => 'bd',  // if provided
     ],
     'status' => 200
 ]
@@ -102,7 +103,12 @@ try {
 
 - Longitude must be between -180 and 180
 - Latitude must be between -90 and 90
-- Coordinates must be within Bangladesh for best results
+
+### Country Code Reference
+
+- Uses ISO Alpha-2 codes (default `bd`)
+- See the country code list: [docs/country-codes.md](country-codes.md)
+- For all other countries, refer to the ISO 3166-1 Alpha-2 standard.
 
 ### Error Handling
 
@@ -123,20 +129,37 @@ Convert address text to GPS coordinates.
 ### Method
 
 ```php
-Barikoi::geocode(string $address)
+Barikoi::geocode(string $address, array $options = [])
 ```
 
 ### Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `address` | string | Yes | Address in Bengali or English |
+| `address` | string | Yes | Address in Bengali or English (sent as `q` parameter) |
+| `options` | array | No | Additional options |
+
+### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `thana` | boolean | false | Include thana information |
+| `district` | boolean | false | Include district information |
+| `bangla` | boolean | false | Include Bangla address |
 
 ### Usage
 
 ```php
 try {
-    $result = Barikoi::geocode('Dhanmondi 27, Dhaka');
+    // Basic usage
+    $result = Barikoi::geocode('shawrapara');
+
+    // With options
+    $result = Barikoi::geocode('shawrapara', [
+        'thana' => true,
+        'district' => true,
+        'bangla' => true,
+    ]);
 
     $coordinates = $result['geocoded_address']['geo_location'];
     $latitude = $coordinates[1];
@@ -269,7 +292,7 @@ try {
 
 ## Search Place
 
-Search for specific places by name or category.
+Search for places by query string.
 
 ### Method
 
@@ -281,49 +304,50 @@ Barikoi::searchPlace(string $query, array $options = [])
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `query` | string | Yes | Search term |
-| `options` | array | No | Search filters |
-
-### Options
-
-| Option | Type | Description |
-|--------|------|-------------|
-| `latitude` | float | Center point latitude |
-| `longitude` | float | Center point longitude |
-| `limit` | int | Maximum results |
-| `ptype` | string | Place type filter |
+| `query` | string | Yes | Search query |
+| `options` | array | No | Additional options |
 
 ### Usage
 
 ```php
 try {
     // Basic search
-    $results = Barikoi::searchPlace('restaurant');
+    $results = Barikoi::searchPlace('barikoi');
 
-    // Search near location
-    $results = Barikoi::searchPlace('hospital', [
-        'latitude' => 23.8067,
-        'longitude' => 90.3572,
-        'limit' => 20,
-    ]);
+    // Access results
+    foreach ($results['places'] as $place) {
+        echo $place['address'];
+    }
 
-} catch (BarikoiValidationException $e) {
+} catch (BarikoiApiException $e) {
     echo "Search failed: " . $e->getMessage();
 }
 ```
 
-### Conditions
+### Response
 
-- Query minimum 1 character
-- Proximity coordinates improve results
-- Returns max 100 results
+```php
+[
+    'places' => [
+        [
+            'id' => 'BKOI2017',
+            'address' => 'Barikoi Office, Dhaka',
+            'area' => 'Dhanmondi',
+            'city' => 'Dhaka',
+        ],
+        // ... more results
+    ],
+    'status' => 200
+]
+```
 
 ### Error Handling
 
 | Error Code | Exception | Cause | Solution |
 |------------|-----------|-------|----------|
-| 400 | `BarikoiValidationException` | Invalid search parameters | Check lat/lng if provided |
-| 404 | `BarikoiApiException` | No results found | Return empty array to user |
+| 400 | `BarikoiValidationException` | Invalid query | Provide valid search query |
+| 401 | `BarikoiApiException` | Invalid API key | Check credentials |
+| 404 | `BarikoiApiException` | No results found | Try different search terms |
 
 ---
 
@@ -334,20 +358,33 @@ Get detailed information about a specific place.
 ### Method
 
 ```php
-Barikoi::getPlaceDetails(string $placeId)
+Barikoi::getPlaceDetails(string $placeCode, array $options = [])
 ```
 
 ### Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `placeId` | string | Yes | Unique place identifier |
+| `placeCode` | string | Yes | Place code (e.g., BKOI2017) |
+| `options` | array | No | Additional options |
+
+### Options
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `session_id` | string | Optional session ID for tracking |
 
 ### Usage
 
 ```php
 try {
-    $details = Barikoi::getPlaceDetails('place_abc123');
+    // Basic usage
+    $details = Barikoi::getPlaceDetails('BKOI2017');
+
+    // With session ID
+    $details = Barikoi::getPlaceDetails('BKOI2017', [
+        'session_id' => '8d6a20cb-e07d-4332-a293-d0cf0fce968e'
+    ]);
 
     $name = $details['place']['name'];
     $address = $details['place']['address'];
@@ -364,7 +401,7 @@ try {
 
 | Error Code | Exception | Cause | Solution |
 |------------|-----------|-------|----------|
-| 400 | `BarikoiValidationException` | Invalid place ID format | Validate place ID |
+| 400 | `BarikoiValidationException` | Invalid place code format | Validate place code |
 | 404 | `BarikoiApiException` | Place doesn't exist | Show "not found" message |
 
 ---
@@ -376,7 +413,7 @@ Find places within a specified radius.
 ### Method
 
 ```php
-Barikoi::nearby(float $longitude, float $latitude, int $distance, array $options = [])
+Barikoi::nearby(float $longitude, float $latitude, float $distance = 0.5, int $limit = 10, array $options = [])
 ```
 
 ### Parameters
@@ -385,19 +422,23 @@ Barikoi::nearby(float $longitude, float $latitude, int $distance, array $options
 |-----------|------|----------|-------------|
 | `longitude` | float | Yes | Center longitude |
 | `latitude` | float | Yes | Center latitude |
-| `distance` | int | Yes | Radius in meters (max 100000) |
+| `distance` | float | No | Radius in kilometers (default: 0.5) |
+| `limit` | int | No | Maximum number of results (default: 10) |
 | `options` | array | No | Additional filters |
 
 ### Usage
 
 ```php
 try {
-    // Find all places within 1km
-    $nearby = Barikoi::nearby(90.3572, 23.8067, 1000);
+    // Find places within 0.5km (default), max 10 results (default)
+    $nearby = Barikoi::nearby(90.38305163, 23.87188719);
 
-    // With limit
-    $nearby = Barikoi::nearby(90.3572, 23.8067, 5000, [
-        'limit' => 50,
+    // Find places within 1km, max 20 results
+    $nearby = Barikoi::nearby(90.38305163, 23.87188719, 1.0, 20);
+
+    // With additional options
+    $nearby = Barikoi::nearby(90.38305163, 23.87188719, 0.5, 10, [
+        'category' => 'restaurant',
     ]);
 
 } catch (BarikoiValidationException $e) {
@@ -407,7 +448,7 @@ try {
 
 ### Conditions
 
-- Distance: 1 to 100,000 meters
+- Distance is in kilometers (e.g., 0.5 = 500 meters)
 - Coordinates must be valid
 - Returns nearest places first
 
@@ -415,8 +456,8 @@ try {
 
 | Error Code | Exception | Cause | Solution |
 |------------|-----------|-------|----------|
-| 400 | `BarikoiValidationException` | Invalid coordinates or distance | Check parameters |
-| 400 | `BarikoiValidationException` | Distance > 100km | Reduce radius |
+| 400 | `BarikoiValidationException` | Invalid coordinates | Check parameters |
+| 404 | `BarikoiApiException` | No places found | Try larger radius |
 
 ---
 
@@ -486,7 +527,7 @@ Find multiple types of places within radius.
 ### Method
 
 ```php
-Barikoi::nearbyWithTypes(float $longitude, float $latitude, array $types, int $distance)
+Barikoi::nearbyWithTypes(float $longitude, float $latitude, array $types, float $distance = 5.0, int $limit = 5)
 ```
 
 ### Parameters
@@ -495,18 +536,30 @@ Barikoi::nearbyWithTypes(float $longitude, float $latitude, array $types, int $d
 |-----------|------|----------|-------------|
 | `longitude` | float | Yes | Center longitude |
 | `latitude` | float | Yes | Center latitude |
-| `types` | array | Yes | Array of place types |
-| `distance` | int | Yes | Radius in meters |
+| `types` | array | Yes | Array of place types (e.g., ['School', 'ATM']) |
+| `distance` | float | No | Radius in kilometers (default: 5.0) |
+| `limit` | int | No | Maximum number of results (default: 5) |
 
 ### Usage
 
 ```php
 try {
+    // Find School and ATM within 5km, max 5 results
     $places = Barikoi::nearbyWithTypes(
-        90.3572,
-        23.8067,
-        ['restaurant', 'hospital', 'pharmacy'],
-        2000
+        90.36668110638857,
+        23.83723803415923,
+        ['School', 'ATM'],
+        5.0,
+        5
+    );
+
+    // With more types
+    $places = Barikoi::nearbyWithTypes(
+        90.36668110638857,
+        23.83723803415923,
+        ['School', 'ATM', 'Restaurant'],
+        5.0,
+        10
     );
 
 } catch (BarikoiValidationException $e) {
@@ -514,18 +567,32 @@ try {
 }
 ```
 
+### Valid Types
+
+- `School`
+- `Restaurant`
+- `Hospital`
+- `Bank`
+- `ATM`
+- `Pharmacy`
+- `Hotel`
+- `Mosque`
+- `Temple`
+- `Church`
+
 ### Conditions
 
-- Maximum 10 types per request
-- Each type must be valid category
-- Combined results from all types
+- At least one type is required
+- Types are sent as comma-separated string in `q` parameter
+- Distance is in kilometers (e.g., 5.0 = 5000 meters)
+- Returns combined results from all types
 
 ### Error Handling
 
 | Error Code | Exception | Cause | Solution |
 |------------|-----------|-------|----------|
 | 400 | `BarikoiValidationException` | Invalid type in array | Check all types are valid |
-| 400 | `BarikoiValidationException` | Too many types (> 10) | Limit to 10 types |
+| 400 | `BarikoiValidationException` | Empty types array | Provide at least one type |
 
 ---
 
@@ -536,49 +603,49 @@ Correct GPS coordinates to nearest road point.
 ### Method
 
 ```php
-Barikoi::snapToRoad(array $points)
+Barikoi::snapToRoad(float $latitude, float $longitude)
 ```
 
 ### Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `points` | array | Yes | Array of coordinate objects |
-
-### Point Format
-
-```php
-[
-    'longitude' => float,
-    'latitude' => float
-]
-```
+| `latitude` | float | Yes | Latitude coordinate |
+| `longitude` | float | Yes | Longitude coordinate |
 
 ### Usage
 
 ```php
 try {
-    $points = [
-        ['longitude' => 90.3572, 'latitude' => 23.8067],
-        ['longitude' => 90.3580, 'latitude' => 23.8070],
-        ['longitude' => 90.3590, 'latitude' => 23.8075],
-    ];
+    // Snap single point to nearest road
+    $snapped = Barikoi::snapToRoad(23.806525320635505, 90.36129978225671);
 
-    $snapped = Barikoi::snapToRoad($points);
-
-    foreach ($snapped['snapped_points'] as $point) {
-        echo "Lat: {$point['latitude']}, Lng: {$point['longitude']}";
-    }
+    // Access results
+    $coordinates = $snapped['coordinates'] ?? null;
+    $distance = $snapped['distance'] ?? null;
 
 } catch (BarikoiValidationException $e) {
-    echo "Invalid points: " . $e->getMessage();
+    echo "Invalid coordinates: " . $e->getMessage();
 }
+```
+
+### Response
+
+```php
+[
+    'coordinates' => [
+        'latitude' => 23.8065,
+        'longitude' => 90.3612
+    ],
+    'distance' => 5.2,  // Distance in meters
+    'type' => 'road'
+]
 ```
 
 ### Conditions
 
-- Minimum 2 points required
-- Maximum 100 points per request
+- Accepts a single point (latitude, longitude)
+- Point is sent as "latitude,longitude" format to the API
 - Points should be on or near roads
 - Points should be in sequence
 
