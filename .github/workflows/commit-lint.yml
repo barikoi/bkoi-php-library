@@ -1,0 +1,115 @@
+name: Commit Message Lint
+
+on:
+  push:
+    branches: [ '**' ]  # All branches
+  pull_request:
+    branches: [ '**' ]  # All branches
+
+jobs:
+  commitlint:
+    runs-on: ubuntu-latest
+    name: Validate Commit Messages
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for commit validation
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install commitlint
+        run: |
+          npm install --save-dev @commitlint/cli @commitlint/config-conventional
+
+      - name: Create commitlint config
+        run: |
+          cat > commitlint.config.js << 'EOF'
+          module.exports = {
+            extends: ['@commitlint/config-conventional'],
+            rules: {
+              // Type must be one of these
+              'type-enum': [2, 'always', [
+                'feat',     // New feature
+                'fix',      // Bug fix
+                'docs',     // Documentation only
+                'style',    // Code style (formatting, semicolons, etc)
+                'refactor', // Code refactoring
+                'perf',     // Performance improvement
+                'test',     // Adding or updating tests
+                'build',    // Build system or dependencies
+                'ci',       // CI/CD configuration
+                'chore',    // Maintenance tasks
+                'revert',   // Revert previous commit
+                'wip'       // Work in progress (optional)
+              ]],
+              // Subject (description) rules
+              'subject-case': [2, 'always', 'lower-case'],
+              'subject-empty': [2, 'never'],
+              'subject-max-length': [2, 'always', 100],
+              // Type rules
+              'type-case': [2, 'always', 'lower-case'],
+              'type-empty': [2, 'never'],
+              // Header rules
+              'header-max-length': [2, 'always', 120],
+            },
+          };
+          EOF
+
+      - name: Validate PR commits
+        if: github.event_name == 'pull_request'
+        run: |
+          npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
+
+      - name: Validate push commits
+        if: github.event_name == 'push'
+        run: |
+          # Validate only the latest commit on push
+          npx commitlint --from HEAD~1 --to HEAD --verbose
+
+      - name: Check for duplicate commit messages
+        run: |
+          echo "Checking for duplicate commit messages..."
+
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            COMMITS=$(git log --format="%s" ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }})
+          else
+            COMMITS=$(git log --format="%s" -10)
+          fi
+
+          DUPLICATES=$(echo "$COMMITS" | sort | uniq -d)
+
+          if [ -n "$DUPLICATES" ]; then
+            echo "❌ Duplicate commit messages found:"
+            echo "$DUPLICATES"
+            echo ""
+            echo "Each commit should have a unique, descriptive message."
+            exit 1
+          else
+            echo "✅ All commit messages are unique"
+          fi
+
+      - name: Show valid commit format on failure
+        if: failure()
+        run: |
+          echo "❌ Invalid commit message format!"
+          echo ""
+          echo "📝 Valid commit message format:"
+          echo "   <type>(<scope>): <description>"
+          echo ""
+          echo "📋 Examples:"
+          echo "   feat: add user authentication"
+          echo "   fix: resolve login bug"
+          echo "   docs: update API documentation"
+          echo "   ci: add commit message validation"
+          echo "   refactor(auth): simplify token handling"
+          echo ""
+          echo "🏷️  Valid types:"
+          echo "   feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert, wip"
+          echo ""
+          echo "📖 Learn more: https://www.conventionalcommits.org/"
+          exit 1
