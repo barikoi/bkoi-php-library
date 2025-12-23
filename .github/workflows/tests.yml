@@ -67,7 +67,7 @@ jobs:
         run: vendor/bin/phpunit --testsuite Unit --testsuite Feature
 
       - name: Execute Integration Tests
-        if: ${{ secrets.BARIKOI_API_KEY != '' }}
+        if: env.BARIKOI_API_KEY != ''
         run: vendor/bin/phpunit --testsuite Integration
         continue-on-error: true
 
