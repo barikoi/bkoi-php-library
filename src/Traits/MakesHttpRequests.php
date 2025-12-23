@@ -23,7 +23,6 @@ trait MakesHttpRequests
      * @param array $params
      * @return array
      */
-    
     protected function get(string $endpoint, array $params = []): array
     {
         $params['api_key'] = $this->apiKey;
