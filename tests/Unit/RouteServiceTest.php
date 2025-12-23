@@ -1,10 +1,11 @@
 <?php
 
-namespace Vendor\PackageName\Tests\Unit;
+namespace Vendor\BarikoiApi\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use Vendor\PackageName\BarikoiClient;
-use Vendor\PackageName\Services\RouteService;
+use Vendor\BarikoiApi\BarikoiClient;
+use Vendor\BarikoiApi\Services\RouteService;
+use Vendor\BarikoiApi\Exceptions\BarikoiValidationException;
 
 /**
  * Unit tests for RouteService profile validation
@@ -136,6 +137,22 @@ class RouteServiceTest extends TestCase
         $this->assertEquals('foot', $result['profile']);
         $this->assertEquals('polyline', $result['geometries']);
         $this->assertTrue($result['steps']);
+    }
+
+    /**
+     * Test that invalid coordinates throw validation exception
+     */
+    public function test_invalid_coordinates_throw_validation_exception()
+    {
+        $this->expectException(BarikoiValidationException::class);
+
+        $reflection = new \ReflectionClass($this->routeService);
+        $method = $reflection->getMethod('validatePoints');
+        $method->setAccessible(true);
+
+        $method->invoke($this->routeService, [
+            ['longitude' => 200, 'latitude' => 95], // out of range
+        ]);
     }
 }
 

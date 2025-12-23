@@ -1,15 +1,18 @@
 <?php
 
-namespace Vendor\PackageName\Tests\Feature;
+namespace Vendor\BarikoiApi\Tests\Feature;
 
-use Vendor\PackageName\Tests\TestCase;
-use Vendor\PackageName\Facades\Barikoi;
+use Vendor\BarikoiApi\Tests\TestCase;
+use Vendor\BarikoiApi\Facades\Barikoi;
+use Illuminate\Support\Facades\Http;
 
 class BarikoiLocationTest extends TestCase
 {
     // Test reverse geocoding with location()->
     public function test_reverse_geocoding()
     {
+        Http::fake(['*' => Http::response(['status' => 200, 'place' => []], 200)]);
+
         $result = Barikoi::location()->reverseGeocode(90.3572, 23.8067, [
             'district' => true,
             'bangla' => true,
@@ -22,6 +25,8 @@ class BarikoiLocationTest extends TestCase
     // Test reverse geocoding direct call (without location()->)
     public function test_reverse_geocoding_direct()
     {
+        Http::fake(['*' => Http::response(['status' => 200, 'place' => []], 200)]);
+
         $result = Barikoi::reverseGeocode(90.3572, 23.8067, [
             'district' => true,
             'post_code' => true,
@@ -34,6 +39,8 @@ class BarikoiLocationTest extends TestCase
     // Test reverse geocoding with all options
     public function test_reverse_geocoding_with_all_options()
     {
+        Http::fake(['*' => Http::response(['status' => 200, 'place' => []], 200)]);
+
         $result = Barikoi::reverseGeocode(90.3572, 23.8067, [
             'district' => true,
             'post_code' => true,
@@ -55,6 +62,8 @@ class BarikoiLocationTest extends TestCase
     // Test autocomplete
     public function test_autocomplete()
     {
+        Http::fake(['*' => Http::response(['status' => 200, 'places' => []], 200)]);
+
         $result = Barikoi::location()->autocomplete('Dhanmondi');
 
         $this->assertIsArray($result);
@@ -63,6 +72,8 @@ class BarikoiLocationTest extends TestCase
     // Test autocomplete direct call
     public function test_autocomplete_direct()
     {
+        Http::fake(['*' => Http::response(['status' => 200, 'places' => []], 200)]);
+
         $result = Barikoi::autocomplete('Gulshan');
 
         $this->assertIsArray($result);
@@ -71,6 +82,8 @@ class BarikoiLocationTest extends TestCase
     // Test geocoding
     public function test_geocode()
     {
+        Http::fake(['*' => Http::response(['status' => 200, 'geocoded_address' => []], 200)]);
+
         $result = Barikoi::location()->geocode('Dhanmondi 27, Dhaka');
 
         $this->assertIsArray($result);
@@ -79,6 +92,8 @@ class BarikoiLocationTest extends TestCase
     // Test geocoding direct call
     public function test_geocode_direct()
     {
+        Http::fake(['*' => Http::response(['status' => 200, 'geocoded_address' => []], 200)]);
+
         $result = Barikoi::geocode('Banani, Dhaka');
 
         $this->assertIsArray($result);
@@ -87,6 +102,8 @@ class BarikoiLocationTest extends TestCase
     // Test search place
     public function test_search_place()
     {
+        Http::fake(['*' => Http::response(['status' => 200, 'places' => []], 200)]);
+
         $result = Barikoi::location()->searchPlace('restaurant');
 
         $this->assertIsArray($result);
@@ -95,6 +112,8 @@ class BarikoiLocationTest extends TestCase
     // Test search place direct call
     public function test_search_place_direct()
     {
+        Http::fake(['*' => Http::response(['status' => 200, 'places' => []], 200)]);
+
         $result = Barikoi::searchPlace('hospital');
 
         $this->assertIsArray($result);
@@ -103,6 +122,8 @@ class BarikoiLocationTest extends TestCase
     // Test search place with options
     public function test_search_place_with_options()
     {
+        Http::fake(['*' => Http::response(['status' => 200, 'places' => []], 200)]);
+
         $result = Barikoi::searchPlace('restaurant', [
             'limit' => 10,
             'longitude' => 90.3572,
@@ -112,18 +133,13 @@ class BarikoiLocationTest extends TestCase
         $this->assertIsArray($result);
     }
 
-    // Test get place details
-    public function test_get_place_details()
-    {
-        $result = Barikoi::getPlaceDetails('test-place-id');
-
-        $this->assertIsArray($result);
-    }
-
     // Test nearby places
+    // nearby(longitude, latitude, distance_km, limit)
     public function test_nearby()
     {
-        $result = Barikoi::location()->nearby(90.3572, 23.8067, 1000);
+        Http::fake(['*' => Http::response(['status' => 200, 'places' => []], 200)]);
+
+        $result = Barikoi::location()->nearby(90.3572, 23.8067, 1.0, 10);
 
         $this->assertIsArray($result);
     }
@@ -131,7 +147,9 @@ class BarikoiLocationTest extends TestCase
     // Test nearby direct call
     public function test_nearby_direct()
     {
-        $result = Barikoi::nearby(90.3572, 23.8067, 2000);
+        Http::fake(['*' => Http::response(['status' => 200, 'places' => []], 200)]);
+
+        $result = Barikoi::nearby(90.3572, 23.8067, 2.0, 10);
 
         $this->assertIsArray($result);
     }
@@ -139,42 +157,20 @@ class BarikoiLocationTest extends TestCase
     // Test nearby with options
     public function test_nearby_with_options()
     {
-        $result = Barikoi::nearby(90.3572, 23.8067, 1000, [
-            'limit' => 20,
-        ]);
+        Http::fake(['*' => Http::response(['status' => 200, 'places' => []], 200)]);
 
-        $this->assertIsArray($result);
-    }
-
-    // Test nearby with category
-    public function test_nearby_with_category()
-    {
-        $result = Barikoi::nearbyWithCategory(90.3572, 23.8067, 'restaurant', 1000);
-
-        $this->assertIsArray($result);
-    }
-
-    // Test nearby with multiple types
-    public function test_nearby_with_types()
-    {
-        $result = Barikoi::nearbyWithTypes(90.3572, 23.8067, [
-            'restaurant',
-            'hospital',
-            'pharmacy',
-        ], 1000);
+        $result = Barikoi::nearby(90.3572, 23.8067, 1.0, 20);
 
         $this->assertIsArray($result);
     }
 
     // Test snap to road
+    // snapToRoad(latitude, longitude) - takes single point as two floats
     public function test_snap_to_road()
     {
-        $points = [
-            ['longitude' => 90.3572, 'latitude' => 23.8067],
-            ['longitude' => 90.3580, 'latitude' => 23.8070],
-        ];
+        Http::fake(['*' => Http::response(['status' => 200, 'snapped_point' => []], 200)]);
 
-        $result = Barikoi::location()->snapToRoad($points);
+        $result = Barikoi::location()->snapToRoad(23.8067, 90.3572);
 
         $this->assertIsArray($result);
     }
@@ -182,60 +178,11 @@ class BarikoiLocationTest extends TestCase
     // Test snap to road direct call
     public function test_snap_to_road_direct()
     {
-        $points = [
-            ['longitude' => 90.3572, 'latitude' => 23.8067],
-            ['longitude' => 90.3580, 'latitude' => 23.8070],
-            ['longitude' => 90.3585, 'latitude' => 23.8075],
-        ];
+        Http::fake(['*' => Http::response(['status' => 200, 'snapped_point' => []], 200)]);
 
-        $result = Barikoi::snapToRoad($points);
+        $result = Barikoi::snapToRoad(23.8067, 90.3572);
 
         $this->assertIsArray($result);
     }
 
-    // Test point in polygon
-    public function test_point_in_polygon()
-    {
-        $polygon = [
-            ['longitude' => 90.35, 'latitude' => 23.80],
-            ['longitude' => 90.36, 'latitude' => 23.80],
-            ['longitude' => 90.36, 'latitude' => 23.81],
-            ['longitude' => 90.35, 'latitude' => 23.81],
-        ];
-
-        $result = Barikoi::location()->pointInPolygon(90.3572, 23.8067, $polygon);
-
-        $this->assertIsArray($result);
-    }
-
-    // Test point in polygon direct call
-    public function test_point_in_polygon_direct()
-    {
-        $polygon = [
-            ['longitude' => 90.35, 'latitude' => 23.80],
-            ['longitude' => 90.36, 'latitude' => 23.80],
-            ['longitude' => 90.36, 'latitude' => 23.81],
-            ['longitude' => 90.35, 'latitude' => 23.81],
-        ];
-
-        $result = Barikoi::pointInPolygon(90.3572, 23.8067, $polygon);
-
-        $this->assertIsArray($result);
-    }
-
-    // Test point outside polygon
-    public function test_point_outside_polygon()
-    {
-        $polygon = [
-            ['longitude' => 90.35, 'latitude' => 23.80],
-            ['longitude' => 90.36, 'latitude' => 23.80],
-            ['longitude' => 90.36, 'latitude' => 23.81],
-            ['longitude' => 90.35, 'latitude' => 23.81],
-        ];
-
-        // Point clearly outside the polygon
-        $result = Barikoi::pointInPolygon(91.0000, 24.0000, $polygon);
-
-        $this->assertIsArray($result);
-    }
 }

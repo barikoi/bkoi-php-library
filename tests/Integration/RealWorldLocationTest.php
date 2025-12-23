@@ -1,8 +1,8 @@
 <?php
 
-namespace Vendor\PackageName\Tests\Integration;
+namespace Vendor\BarikoiApi\Tests\Integration;
 
-use Vendor\PackageName\Facades\Barikoi;
+use Vendor\BarikoiApi\Facades\Barikoi;
 
 /**
  * Real-world integration tests for location services
@@ -72,9 +72,8 @@ class RealWorldLocationTest extends IntegrationTestCase
      */
     public function test_autocomplete_gulshan_search()
     {
-        $result = Barikoi::autocomplete('Gulshan', [
-            'limit' => 5,
-        ]);
+        // Note: autocomplete only supports 'bangla' option, not 'limit'
+        $result = Barikoi::autocomplete('Gulshan');
 
         $this->assertIsArray($result);
         $this->assertEquals(200, $result['status']);
@@ -151,43 +150,13 @@ class RealWorldLocationTest extends IntegrationTestCase
 
         if (!empty($result['places'])) {
             $firstPlace = $result['places'][0];
-            $this->assertArrayHasKey('address', $firstPlace);
-            $this->assertArrayHasKey('distance', $firstPlace);
+            // API returns 'Address' (capital A) not 'address'
+            $this->assertArrayHasKey('Address', $firstPlace);
+            // API returns 'distance_in_meters' not 'distance'
+            $this->assertArrayHasKey('distance_in_meters', $firstPlace);
 
             echo "\n✓ Found " . count($result['places']) . " places within 1km\n";
-            echo "  Nearest: {$firstPlace['address']} ({$firstPlace['distance']}m away)\n";
-        }
-    }
-
-    /**
-     * Test nearby with specific category
-     *
-     * Scenario: Find all restaurants near user's location
-     * Expected: Get filtered results by category
-     */
-    public function test_nearby_with_category_restaurant()
-    {
-        // Gulshan-2 circle
-        $result = Barikoi::nearbyWithCategory(90.4125, 23.7925, 'Restaurant', 2000);
-
-        $this->assertIsArray($result);
-
-        // Check if endpoint is available
-        if (isset($result['message']) && str_contains($result['message'], 'could not be found')) {
-            $this->markTestSkipped('Nearby category endpoint not available in current API version');
-            return;
-        }
-
-        $this->assertEquals(200, $result['status']);
-        $this->assertArrayHasKey('places', $result);
-
-        if (!empty($result['places'])) {
-            echo "\n✓ Found " . count($result['places']) . " restaurants within 2km\n";
-
-            // Show first 3 restaurants
-            foreach (array_slice($result['places'], 0, 3) as $index => $place) {
-                echo "  " . ($index + 1) . ". {$place['address']}\n";
-            }
+            echo "  Nearest: {$firstPlace['Address']} ({$firstPlace['distance_in_meters']}m away)\n";
         }
     }
 

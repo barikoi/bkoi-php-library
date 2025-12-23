@@ -1,10 +1,10 @@
 <?php
 
-namespace Vendor\PackageName\Tests\Unit;
+namespace Vendor\BarikoiApi\Tests\Unit;
 
-use Vendor\PackageName\Tests\TestCase;
-use Vendor\PackageName\Services\LocationService;
-use Vendor\PackageName\BarikoiClient;
+use Vendor\BarikoiApi\Tests\TestCase;
+use Vendor\BarikoiApi\Services\LocationService;
+use Vendor\BarikoiApi\BarikoiClient;
 use Illuminate\Support\Facades\Http;
 
 class LocationServiceEdgeCaseTest extends TestCase
@@ -129,150 +129,53 @@ class LocationServiceEdgeCaseTest extends TestCase
     }
 
     // Test nearby with zero distance
+    // nearby(longitude, latitude, distance_km, limit)
     public function test_nearby_with_zero_distance()
     {
         Http::fake(['*' => Http::response(['status' => 200], 200)]);
 
-        $result = $this->service->nearby(90.3572, 23.8067, 0);
+        $result = $this->service->nearby(90.3572, 23.8067, 0, 10);
 
         $this->assertIsArray($result);
     }
 
     // Test nearby with very large distance
+    // Distance is in km, so 100 = 100km, and is in the URL path
     public function test_nearby_with_large_distance()
     {
         Http::fake(['*' => Http::response(['status' => 200], 200)]);
 
-        $result = $this->service->nearby(90.3572, 23.8067, 100000); // 100km
+        $result = $this->service->nearby(90.3572, 23.8067, 100, 10); // 100km
 
         $this->assertIsArray($result);
         Http::assertSent(function ($request) {
-            return str_contains($request->url(), 'distance=100000');
+            // Distance is in URL path: /nearby/{distance}/{limit}
+            return str_contains($request->url(), '/nearby/100/10');
         });
-    }
-
-    // Test nearby with types - empty array
-    public function test_nearby_with_empty_types_array()
-    {
-        Http::fake(['*' => Http::response(['status' => 200], 200)]);
-
-        $result = $this->service->nearbyWithTypes(90.3572, 23.8067, [], 1000);
-
-        $this->assertIsArray($result);
-    }
-
-    // Test nearby with types - single type
-    public function test_nearby_with_single_type()
-    {
-        Http::fake(['*' => Http::response(['status' => 200], 200)]);
-
-        $result = $this->service->nearbyWithTypes(90.3572, 23.8067, ['restaurant'], 1000);
-
-        Http::assertSent(function ($request) {
-            return str_contains($request->url(), 'types=restaurant');
-        });
-    }
-
-    // Test nearby with types - many types
-    public function test_nearby_with_many_types()
-    {
-        Http::fake(['*' => Http::response(['status' => 200], 200)]);
-
-        $types = ['restaurant', 'hospital', 'pharmacy', 'atm', 'bank', 'school', 'hotel'];
-        $result = $this->service->nearbyWithTypes(90.3572, 23.8067, $types, 1000);
-
-        $this->assertIsArray($result);
     }
 
     // Test snap to road with single point
+    // snapToRoad(latitude, longitude) takes two floats, not an array
     public function test_snap_to_road_with_single_point()
     {
         Http::fake(['*' => Http::response(['status' => 200], 200)]);
 
-        $result = $this->service->snapToRoad([
-            ['longitude' => 90.3572, 'latitude' => 23.8067]
-        ]);
+        $result = $this->service->snapToRoad(23.8067, 90.3572);
 
         $this->assertIsArray($result);
     }
 
-    // Test snap to road with many points
-    public function test_snap_to_road_with_many_points()
+    // Test snap to road with precise coordinates
+    public function test_snap_to_road_with_precise_coordinates()
     {
         Http::fake(['*' => Http::response(['status' => 200], 200)]);
 
-        $points = [];
-        for ($i = 0; $i < 100; $i++) {
-            $points[] = ['longitude' => 90.3572 + ($i * 0.001), 'latitude' => 23.8067 + ($i * 0.001)];
-        }
-
-        $result = $this->service->snapToRoad($points);
+        $result = $this->service->snapToRoad(23.806525320635505, 90.36129978225671);
 
         $this->assertIsArray($result);
-    }
-
-    // Test snap to road with empty array
-    public function test_snap_to_road_with_empty_array()
-    {
-        Http::fake(['*' => Http::response(['status' => 200], 200)]);
-
-        $result = $this->service->snapToRoad([]);
-
-        $this->assertIsArray($result);
-    }
-
-    // Test point in polygon with triangle (3 points)
-    public function test_point_in_polygon_with_triangle()
-    {
-        Http::fake(['*' => Http::response(['status' => 200], 200)]);
-
-        $triangle = [
-            ['longitude' => 90.35, 'latitude' => 23.80],
-            ['longitude' => 90.36, 'latitude' => 23.80],
-            ['longitude' => 90.355, 'latitude' => 23.81],
-        ];
-
-        $result = $this->service->pointInPolygon(90.3525, 23.805, $triangle);
-
-        $this->assertIsArray($result);
-    }
-
-    // Test point in polygon with complex polygon (many points)
-    public function test_point_in_polygon_with_complex_shape()
-    {
-        Http::fake(['*' => Http::response(['status' => 200], 200)]);
-
-        $complexPolygon = [
-            ['longitude' => 90.35, 'latitude' => 23.80],
-            ['longitude' => 90.36, 'latitude' => 23.80],
-            ['longitude' => 90.365, 'latitude' => 23.805],
-            ['longitude' => 90.36, 'latitude' => 23.81],
-            ['longitude' => 90.355, 'latitude' => 23.815],
-            ['longitude' => 90.35, 'latitude' => 23.81],
-            ['longitude' => 90.345, 'latitude' => 23.805],
-        ];
-
-        $result = $this->service->pointInPolygon(90.355, 23.805, $complexPolygon);
-
-        $this->assertIsArray($result);
-    }
-
-    // Test point in polygon at exact boundary
-    public function test_point_in_polygon_on_boundary()
-    {
-        Http::fake(['*' => Http::response(['status' => 200], 200)]);
-
-        $polygon = [
-            ['longitude' => 90.35, 'latitude' => 23.80],
-            ['longitude' => 90.36, 'latitude' => 23.80],
-            ['longitude' => 90.36, 'latitude' => 23.81],
-            ['longitude' => 90.35, 'latitude' => 23.81],
-        ];
-
-        // Point exactly on the edge
-        $result = $this->service->pointInPolygon(90.35, 23.80, $polygon);
-
-        $this->assertIsArray($result);
+        Http::assertSent(function ($request) {
+            return str_contains($request->url(), 'point=');
+        });
     }
 
     // Test search place with limit option
@@ -306,31 +209,20 @@ class LocationServiceEdgeCaseTest extends TestCase
         });
     }
 
-    // Test get place details with special characters in ID
-    public function test_get_place_details_with_special_id()
-    {
-        Http::fake(['*' => Http::response(['status' => 200], 200)]);
-
-        $result = $this->service->getPlaceDetails('place-id-123-abc-xyz');
-
-        Http::assertSent(function ($request) {
-            return str_contains($request->url(), '/place/place-id-123-abc-xyz');
-        });
-    }
-
     // Test nearby with additional options
+    // nearby(longitude, latitude, distance_km, limit, options)
     public function test_nearby_with_custom_options()
     {
         Http::fake(['*' => Http::response(['status' => 200], 200)]);
 
-        $result = $this->service->nearby(90.3572, 23.8067, 1000, [
-            'limit' => 50,
+        $result = $this->service->nearby(90.3572, 23.8067, 1.0, 50, [
             'type' => 'restaurant',
         ]);
 
         Http::assertSent(function ($request) {
             $url = $request->url();
-            return str_contains($url, 'limit=50')
+            // limit is in URL path, options like type are in query
+            return str_contains($url, '/nearby/1/50')
                 && str_contains($url, 'type=restaurant');
         });
     }

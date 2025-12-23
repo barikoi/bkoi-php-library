@@ -3,6 +3,7 @@
 namespace Vendor\BarikoiApi\Services;
 
 use Vendor\BarikoiApi\BarikoiClient;
+use Vendor\BarikoiApi\Exceptions\BarikoiValidationException;
 
 class RouteService
 {
@@ -49,6 +50,29 @@ class RouteService
     }
 
     /**
+     * Validate that all points have valid latitude/longitude
+     *
+     * @param array $points
+     * @return void
+     * @throws BarikoiValidationException
+     */
+    protected function validatePoints(array $points): void
+    {
+        foreach ($points as $point) {
+            $lon = $point['longitude'] ?? null;
+            $lat = $point['latitude'] ?? null;
+
+            if (!is_numeric($lon) || !is_numeric($lat)) {
+                throw new BarikoiValidationException('Invalid coordinates: longitude and latitude must be numeric.');
+            }
+
+            if ($lat < -90 || $lat > 90 || $lon < -180 || $lon > 180) {
+                throw new BarikoiValidationException('Invalid coordinates: latitude must be between -90 and 90, longitude between -180 and 180.');
+            }
+        }
+    }
+
+    /**
      * Route Overview - Get simple route between points
      *
      * Calculate a basic route between two or more points. Returns route geometry
@@ -65,21 +89,22 @@ class RouteService
      * @example
      * ```php
      * // Car route (default)
-     * $route = Barikoi::route()->overview([
+     * $route = Barikoi::routeOverview([
      *     ['longitude' => 90.3572, 'latitude' => 23.8067],
      *     ['longitude' => 90.3680, 'latitude' => 23.8100]
      * ]);
      *
      * // Walking route
-     * $route = Barikoi::route()->overview([
+     * $route = Barikoi::routeOverview([
      *     ['longitude' => 90.3572, 'latitude' => 23.8067],
      *     ['longitude' => 90.3680, 'latitude' => 23.8100]
      * ], ['profile' => 'foot']);
      * ```
      */
-    public function overview(array $points, array $options = []): array
+    public function routeOverview(array $points, array $options = []): array
     {
-        // Validate profile
+        // Validate coordinates and profile
+        $this->validatePoints($points);
         $options = $this->validateProfile($options);
 
         // Convert points to URL path format: lon,lat;lon,lat
@@ -92,7 +117,7 @@ class RouteService
             $options['geometries'] = 'polyline';
         }
 
-        return $this->client->get("/route/{$coordinates}", $options);
+        return $this->client->get("/v2/api/route/{$coordinates}", $options);
     }
 
     /**
@@ -115,13 +140,13 @@ class RouteService
      * @example
      * ```php
      * // Car route with turn-by-turn
-     * $detailedRoute = Barikoi::route()->detailed([
+     * $detailedRoute = Barikoi::calculateRoute([
      *     ['longitude' => 90.3572, 'latitude' => 23.8067],
      *     ['longitude' => 90.3680, 'latitude' => 23.8100]
      * ], ['alternatives' => true, 'steps' => true]);
      *
      * // Walking route
-     * $walkingRoute = Barikoi::route()->detailed([
+     * $walkingRoute = Barikoi::calculateRoute([
      *     ['longitude' => 90.3572, 'latitude' => 23.8067],
      *     ['longitude' => 90.3680, 'latitude' => 23.8100]
      * ], ['profile' => 'foot', 'steps' => true]);
@@ -129,7 +154,8 @@ class RouteService
      */
     public function detailed(array $points, array $options = []): array
     {
-        // Validate profile
+        // Validate coordinates and profile
+        $this->validatePoints($points);
         $options = $this->validateProfile($options);
 
         // Convert points to URL path format: lon,lat;lon,lat
@@ -140,17 +166,17 @@ class RouteService
         // Add default parameters for detailed route
         $params = array_merge([
             'geometries' => 'polyline',
-            'steps' => 'true',
         ], $options);
 
-        // Convert boolean to string
-        foreach ($params as $key => $value) {
-            if (is_bool($value)) {
-                $params[$key] = $value ? 'true' : 'false';
+        // Convert boolean flags to 'true'/'false' strings if present
+        foreach (['steps', 'alternatives'] as $flag) {
+            if (array_key_exists($flag, $params) && is_bool($params[$flag])) {
+                $params[$flag] = $params[$flag] ? 'true' : 'false';
             }
         }
 
-        return $this->client->get("/route/{$coordinates}", $params);
+        // Use the v2 routing endpoint (same base as routeOverview)
+        return $this->client->get("/v2/api/route/{$coordinates}", $params);
     }
 
     /**
@@ -163,9 +189,9 @@ class RouteService
      * @param array $points Array of coordinate points to visit
      *                      Example: [['longitude' => 90.3572, 'latitude' => 23.8067], ...]
      * @param array $options Optional parameters:
-     *                       - profile (string): 'car' (default) or 'foot'
-     * @return array Response containing optimized route with reordered waypoints
-     * @throws \InvalidArgumentException If invalid profile is provided
+     *                       - profile (string): 'car' (default), 'bike', or 'motorcycle'
+     * @return array Response containing optimized route including waypoints
+     * @throws \InvalidArgumentException If invalid profile is provided or not enough points
      *
      * @example
      * ```php
@@ -181,21 +207,7 @@ class RouteService
      *     ['longitude' => 90.3572, 'latitude' => 23.8067],
      *     ['longitude' => 90.3680, 'latitude' => 23.8100]
      * ], ['profile' => 'foot']);
-     * ```
-     */
-    public function optimize(array $points, array $options = []): array
-    {
-        // Validate profile
-        $options = $this->validateProfile($options);
-
-        $data = array_merge([
-            'points' => json_encode($points),
-        ], $options);
-
-        return $this->client->post('/route/optimize', $data);
-    }
-
-    /**
+     * `optimize `
      * Route Location Optimized
      *
      * Optimize routes with location-specific preferences and constraints.
@@ -253,6 +265,9 @@ class RouteService
      */
     public function match(array $points, array $options = []): array
     {
+        // Validate coordinates
+        $this->validatePoints($points);
+
         // Convert points to URL path format: lon,lat;lon,lat
         $coordinates = implode(';', array_map(function ($point) {
             return "{$point['longitude']},{$point['latitude']}";
@@ -286,7 +301,7 @@ class RouteService
             ['longitude' => $toLongitude, 'latitude' => $toLatitude],
         ];
 
-        return $this->overview($points, $options);
+        return $this->routeOverview($points, $options);
     }
 
     /**
@@ -352,7 +367,7 @@ class RouteService
      * );
      * ```
      */
-    public function detailedNavigation(
+    public function calculateRoute(
         float $startLatitude,
         float $startLongitude,
         float $destinationLatitude,
@@ -431,91 +446,7 @@ class RouteService
 
         // Make POST request with JSON body
         $endpoint = '/routing?' . http_build_query($queryParams);
-        
         return $this->client->postJson($endpoint, $data);
-    }
-
-    /**
-     * Route Optimization with Waypoints
-     * 
-     * Provides optimized routing from source to destination with additional waypoints.
-     * Supports up to 50 waypoints that will be sorted by ID in ascending order.
-     *
-     * @param string $source Source coordinates in "lat,lng" format
-     * @param string $destination Destination coordinates in "lat,lng" format
-     * @param array $waypoints Array of waypoints, each with 'id' and 'point' ("lat,lng")
-     *                         Maximum 50 waypoints
-     * @param array $options Optional parameters:
-     *                       - profile (string): 'car' (default), 'bike', 'motorcycle'
-     * @return array Response with optimized route including hints, info, and paths
-     * @throws \InvalidArgumentException If invalid profile or too many waypoints
-     *
-     * @example
-     * ```php
-     * // Basic route with waypoints
-     * $route = Barikoi::route()->optimizedRoute(
-     *     '23.746086,90.37368',      // Source: lat,lng
-     *     '23.746214,90.371654',     // Destination: lat,lng
-     *     [
-     *         ['id' => 1, 'point' => '23.746086,90.37368'],
-     *         ['id' => 2, 'point' => '23.74577,90.373389'],
-     *         ['id' => 3, 'point' => '23.74442,90.372909'],
-     *     ]
-     * );
-     *
-     * // With motorcycle profile
-     * $motorcycleRoute = Barikoi::route()->optimizedRoute(
-     *     '23.746086,90.37368',
-     *     '23.746214,90.371654',
-     *     [
-     *         ['id' => 1, 'point' => '23.746086,90.37368'],
-     *         ['id' => 2, 'point' => '23.74577,90.373389'],
-     *     ],
-     *     ['profile' => 'motorcycle']
-     * );
-     * ```
-     */
-    public function optimizedRoute(string $source, string $destination, array $waypoints = [], array $options = []): array
-    {
-        // Validate profile
-        $validProfiles = ['car', 'bike', 'motorcycle'];
-        $profile = $options['profile'] ?? 'car';
-
-        if (!in_array($profile, $validProfiles)) {
-            return [
-                'status' => 400,
-                'error' => 'invalid_profile',
-                'message' => "Profile '{$profile}' is not valid",
-                'supported_profiles' => $validProfiles
-            ];
-        }
-
-        // Validate waypoints count (maximum 50)
-        if (count($waypoints) > 50) {
-            return [
-                'status' => 400,
-                'error' => 'too_many_waypoints',
-                'message' => 'Maximum 50 waypoints allowed',
-                'provided' => count($waypoints),
-                'maximum' => 50
-            ];
-        }
-
-        // Sort waypoints by id in ascending order
-        usort($waypoints, function ($a, $b) {
-            return ($a['id'] ?? 0) <=> ($b['id'] ?? 0);
-        });
-
-        // Build request data
-        $data = [
-            'source' => $source,
-            'destination' => $destination,
-            'profile' => $profile,
-            'geo_points' => $waypoints,
-        ];
-
-        // Make POST request with JSON body (api_key in body)
-        return $this->client->postJsonWithKeyInBody('/route/optimized', $data);
     }
 }
 

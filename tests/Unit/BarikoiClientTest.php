@@ -1,9 +1,9 @@
 <?php
 
-namespace Vendor\PackageName\Tests\Unit;
+namespace Vendor\BarikoiApi\Tests\Unit;
 
-use Vendor\PackageName\Tests\TestCase;
-use Vendor\PackageName\BarikoiClient;
+use Vendor\BarikoiApi\Tests\TestCase;
+use Vendor\BarikoiApi\BarikoiClient;
 use Illuminate\Support\Facades\Http;
 
 class BarikoiClientTest extends TestCase

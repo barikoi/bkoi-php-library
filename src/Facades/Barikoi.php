@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static array searchPlace(string $query, array $options = [])
  * @method static array geocode(string $address, array $options = [])
  * @method static array getPlaceDetails(string $placeCode, array $options = [])
+ * @method static array placeDetails(string $placeCode, array $options = [])
  * @method static array snapToRoad(float $latitude, float $longitude)
  * @method static array nearby(float $longitude, float $latitude, float $distance = 0.5, int $limit = 10, array $options = [])
  * @method static array nearbyWithCategory(float $longitude, float $latitude, string $category, float $distance = 1.0, int $limit = 10)
@@ -26,8 +27,11 @@ use Illuminate\Support\Facades\Facade;
  * @method static array pointInPolygon(float $longitude, float $latitude, array $polygon)
  *
  * Route Methods (Direct Access):
+ * @method static array routeOverview(array $points, array $options = [])
+ * @method static array calculateRoute(array $points, array $options = [])
  * @method static array detailedNavigation(float $startLat, float $startLng, float $destLat, float $destLng, array $options = [])
  * @method static array optimizedRoute(string $source, string $destination, array $waypoints = [], array $options = [])
+ * @method static array routeOptimize(array $points, array $options = [])
  *
  * @see \Vendor\BarikoiApi\Barikoi
  */

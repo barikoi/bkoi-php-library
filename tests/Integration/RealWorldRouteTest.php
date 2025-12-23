@@ -1,8 +1,8 @@
 <?php
 
-namespace Vendor\PackageName\Tests\Integration;
+namespace Vendor\BarikoiApi\Tests\Integration;
 
-use Vendor\PackageName\Facades\Barikoi;
+use Vendor\BarikoiApi\Facades\Barikoi;
 
 /**
  * Real-world integration tests for route services
@@ -97,16 +97,25 @@ class RealWorldRouteTest extends IntegrationTestCase
             ['longitude' => 90.4125, 'latitude' => 23.7925],
         ];
 
-        $result = Barikoi::route()->match($points);
+        try {
+            $result = Barikoi::route()->match($points);
+        } catch (\Vendor\BarikoiApi\Exceptions\BarikoiApiException $e) {
+            // Route matching endpoint not available in current API version
+            if (strpos($e->getMessage(), 'could not be found') !== false) {
+                $this->markTestSkipped('Route matching endpoint not available in current API version');
+                return;
+            }
+            throw $e;
+        }
 
         $this->assertIsArray($result);
-        
+
         // Check if route matching is available
         if (!isset($result['code']) || (isset($result['message']) && strpos($result['message'], 'not be found') !== false)) {
             $this->markTestSkipped('Route matching endpoint not available');
             return;
         }
-        
+
         $this->assertEquals('Ok', $result['code']);
         $this->assertArrayHasKey('matchings', $result);
 
@@ -133,8 +142,8 @@ class RealWorldRouteTest extends IntegrationTestCase
             ['longitude' => 90.3563, 'latitude' => 23.8103], // Stop 4: Mirpur
         ];
 
-        // Test with overview method for multi-waypoint route
-        $result = Barikoi::route()->overview($waypoints);
+        // Test with routeOverview method for multi-waypoint route
+        $result = Barikoi::routeOverview($waypoints);
 
         $this->skipIfRouteNotAvailable($result);
         $this->assertEquals('Ok', $result['code']);

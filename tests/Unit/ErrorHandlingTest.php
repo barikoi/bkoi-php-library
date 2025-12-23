@@ -1,13 +1,13 @@
 <?php
 
-namespace Vendor\PackageName\Tests\Unit;
+namespace Vendor\BarikoiApi\Tests\Unit;
 
-use Vendor\PackageName\Tests\TestCase;
-use Vendor\PackageName\Services\LocationService;
-use Vendor\PackageName\BarikoiClient;
+use Vendor\BarikoiApi\Tests\TestCase;
+use Vendor\BarikoiApi\Services\LocationService;
+use Vendor\BarikoiApi\BarikoiClient;
 use Illuminate\Support\Facades\Http;
-use Vendor\PackageName\Exceptions\BarikoiApiException;
-use Vendor\PackageName\Exceptions\BarikoiValidationException;
+use Vendor\BarikoiApi\Exceptions\BarikoiApiException;
+use Vendor\BarikoiApi\Exceptions\BarikoiValidationException;
 
 class ErrorHandlingTest extends TestCase
 {
@@ -126,7 +126,7 @@ class ErrorHandlingTest extends TestCase
         ]);
 
         $this->expectException(BarikoiValidationException::class);
-        $this->expectExceptionMessage('Validation Error: Invalid coordinates');
+        $this->expectExceptionMessage('Invalid latitude or longitude');
         // Coordinates out of valid range
         $this->service->reverseGeocode(999, 999);
     }
@@ -198,42 +198,6 @@ class ErrorHandlingTest extends TestCase
         $this->expectException(BarikoiValidationException::class);
         $this->expectExceptionMessage('Validation Error: Address not found');
         $this->service->geocode('');
-    }
-
-    // Test nearby with invalid category
-    public function test_nearby_with_invalid_category()
-    {
-        Http::fake([
-            '*' => Http::response([
-                'status' => 400,
-                'message' => 'Invalid category'
-            ], 400)
-        ]);
-
-        $this->expectException(BarikoiValidationException::class);
-        $this->expectExceptionMessage('Validation Error: Invalid category');
-        $this->service->nearbyWithCategory(90.3572, 23.8067, 'invalid_category_xyz', 1000);
-    }
-
-    // Test point in polygon with invalid polygon
-    public function test_point_in_polygon_with_invalid_polygon()
-    {
-        Http::fake([
-            '*' => Http::response([
-                'status' => 400,
-                'message' => 'Invalid polygon'
-            ], 400)
-        ]);
-
-        $this->expectException(BarikoiValidationException::class);
-        $this->expectExceptionMessage('Validation Error: Invalid polygon');
-        // Polygon with only 2 points (invalid)
-        $invalidPolygon = [
-            ['longitude' => 90.35, 'latitude' => 23.80],
-            ['longitude' => 90.36, 'latitude' => 23.80],
-        ];
-
-        $this->service->pointInPolygon(90.3572, 23.8067, $invalidPolygon);
     }
 
     // Test response with unexpected structure

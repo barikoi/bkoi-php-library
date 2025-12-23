@@ -1,9 +1,10 @@
 <?php
 
-namespace Vendor\PackageName\Tests\Feature;
+namespace Vendor\BarikoiApi\Tests\Feature;
 
-use Vendor\PackageName\Tests\TestCase;
-use Vendor\PackageName\Facades\Barikoi;
+use Vendor\BarikoiApi\Tests\TestCase;
+use Vendor\BarikoiApi\Facades\Barikoi;
+use Illuminate\Support\Facades\Http;
 
 class BarikoiRouteTest extends TestCase
 {
@@ -14,12 +15,14 @@ class BarikoiRouteTest extends TestCase
      */
     public function test_route_overview()
     {
+        Http::fake(['*' => Http::response(['status' => 200, 'routes' => []], 200)]);
+
         $points = [
             ['longitude' => 90.3572, 'latitude' => 23.8067],
             ['longitude' => 90.3680, 'latitude' => 23.8100],
         ];
 
-        $result = Barikoi::route()->overview($points);
+        $result = Barikoi::routeOverview($points);
 
         $this->assertIsArray($result);
     }
@@ -31,33 +34,17 @@ class BarikoiRouteTest extends TestCase
      */
     public function test_detailed_route()
     {
+        Http::fake(['*' => Http::response(['status' => 200, 'routes' => []], 200)]);
+
         $points = [
             ['longitude' => 90.3572, 'latitude' => 23.8067],
             ['longitude' => 90.3680, 'latitude' => 23.8100],
         ];
 
-        $result = Barikoi::route()->detailed($points, [
+        $result = Barikoi::calculateRoute($points, [
             'alternatives' => true,
             'steps' => true,
         ]);
-
-        $this->assertIsArray($result);
-    }
-
-    /**
-     * Test route optimization
-     *
-     * @return void
-     */
-    public function test_route_optimization()
-    {
-        $points = [
-            ['longitude' => 90.3572, 'latitude' => 23.8067],
-            ['longitude' => 90.3680, 'latitude' => 23.8100],
-            ['longitude' => 90.3750, 'latitude' => 23.8150],
-        ];
-
-        $result = Barikoi::route()->optimize($points);
 
         $this->assertIsArray($result);
     }
@@ -69,6 +56,8 @@ class BarikoiRouteTest extends TestCase
      */
     public function test_route_match()
     {
+        Http::fake(['*' => Http::response(['status' => 200, 'matchings' => []], 200)]);
+
         $points = [
             ['longitude' => 90.3572, 'latitude' => 23.8067],
             ['longitude' => 90.3575, 'latitude' => 23.8068],

@@ -3,6 +3,7 @@
 namespace Vendor\BarikoiApi\Services;
 
 use Vendor\BarikoiApi\BarikoiClient;
+use Vendor\BarikoiApi\Exceptions\BarikoiValidationException;
 
 /**
  * Location Service - Handles geocoding, search, and place APIs
@@ -17,12 +18,19 @@ class LocationService
     }
 
     /**
-     * Convert coordinates to address
+     * Convert coordinates to address (Barikoi V2)
+     * Endpoint: GET /v2/api/search/reverse/geocode
+     * Docs: Reverse Geocoding (Version 2) [[https://docs.barikoi.com/api#tag/v2.0]]
+     *
      * Options: district, post_code, country, sub_district, union, bangla, thana,
      *          country_code, pauroshova, location_type, division, address, area, etc.
      */
     public function reverseGeocode(float $longitude, float $latitude, array $options = []): array
     {
+        // add a simple validation or latitude and longitude
+        if ($latitude < -90 || $latitude > 90 || $longitude < -180 || $longitude > 180) {
+            throw new BarikoiValidationException('Invalid latitude or longitude');
+        }
         $params = array_merge([
             'longitude' => $longitude,
             'latitude' => $latitude,
@@ -33,63 +41,76 @@ class LocationService
             return is_bool($value) ? ($value ? 'true' : 'false') : $value;
         }, $params);
 
-        return $this->client->get('/search/reverse/geocode', $params);
+        // V2 path: /v2/api/search/reverse/geocode
+        return $this->client->get('/v2/api/search/reverse/geocode', $params);
     }
 
-    // Get place suggestions as user types
+    // Get place suggestions as user types (Barikoi V2 Autocomplete)
     public function autocomplete(string $query, array $options = []): array
     {
-        return $this->client->get('/search/autocomplete', array_merge(['q' => $query], $options));
+        // Only `bangla` option is supported for autocomplete
+        $allowedKeys = ['bangla'];
+        $invalidKeys = array_diff(array_keys($options), $allowedKeys);
+
+        if (!empty($invalidKeys)) {
+            throw new BarikoiValidationException(
+                'Invalid autocomplete options: only "bangla" is supported.'
+            );
+        }
+
+        // V2 path: /v2/api/search/autocomplete [[https://docs.barikoi.com/api#tag/v2.0]]
+        return $this->client->get('/v2/api/search/autocomplete', array_merge(['q' => $query], $options));
     }
 
     // Search for places by query
     public function searchPlace(string $query, array $options = []): array
     {
+        // V2 Search Place: GET /v2/api/search-place
+        $endpoint = '/api/v2/search-place';
         $params = array_merge([
             'q' => $query,
-            'api_key' => config('barikoi.api_key'),
         ], $options);
-        
-        return $this->client->get('/search-place', $params);
+
+        // search-place endpoint uses different base URL structure
+        $baseUrl = config('barikoi.base_url');
+        $client = new BarikoiClient(config('barikoi.api_key'), $baseUrl);
+
+        return $client->get($endpoint, $params);
     }
 
     /**
-     * Convert address to coordinates (Rupantor engine)
-     * Options: thana, district, bangla
+     * Convert address to coordinates (Rupantor engine, Barikoi V2)
+     * Endpoint: POST /v2/api/search/rupantor/geocode
+     * Only the query (`q`) parameter is supported. No additional options are allowed.
      */
     public function geocode(string $address, array $options = []): array
     {
-        $params = array_merge(['q' => $address], $options);
-        // Convert boolean to string "yes"/"no" for API (not "true"/"false")
-        $params = array_map(function ($value) {
-            return is_bool($value) ? ($value ? 'yes' : 'no') : $value;
-        }, $params);
-        return $this->client->post('/search/rupantor/geocode', $params);
-    }
+        // For security and consistency, reject any extra options.
+        if (!empty($options)) {
+            throw new BarikoiValidationException(
+                'Invalid geocode options: only the address (q) parameter is supported.'
+            );
+        }
 
-    // Get detailed info about a place by place_code
-    // Optional session_id parameter can be provided in options
-    public function getPlaceDetails(string $placeCode, array $options = []): array
-    {
-        $params = array_merge([
-            'place_code' => $placeCode,
-            'api_key' => config('barikoi.api_key'),
-        ], $options);
-        return $this->client->get('/places', $params);
+        $params = ['q' => $address];
+
+        // V2 path: /v2/api/search/rupantor/geocode [[https://docs.barikoi.com/api#tag/v2.0]]
+        return $this->client->post('/v2/api/search/rupantor/geocode', $params);
     }
 
     // Snap GPS coordinates to nearest road
     // Accepts a single point with latitude and longitude
     public function snapToRoad(float $latitude, float $longitude): array
     {
+        // V2 Snap to Road: GET /v2/api/routing/nearest [[https://docs.barikoi.com/api#tag/v2.0]]
         $endpoint = "/v2/api/routing/nearest";
         $params = [
             'point' => $latitude . ',' . $longitude,
             'api_key' => config('barikoi.api_key'),
         ];
         
-        // Snap to road endpoint uses different base URL structure
-        $baseUrl = 'https://barikoi.xyz';
+        // Uses base_url from config (https://barikoi.xyz)
+        $baseUrl = config('barikoi.base_url');
         $client = new BarikoiClient(config('barikoi.api_key'), $baseUrl);
         return $client->get($endpoint, $params);
     }
@@ -100,6 +121,7 @@ class LocationService
     // Note: This endpoint uses /v2/api path, so we use a different base URL
     public function nearby(float $longitude, float $latitude, float $distance = 0.5, int $limit = 10, array $options = []): array
     {
+        // V2 Nearby: GET /v2/api/search/nearby/{distance}/{limit} [[https://docs.barikoi.com/api#tag/v2.0]]
         $endpoint = "/v2/api/search/nearby/{$distance}/{$limit}";
         $params = array_merge([
             'longitude' => $longitude,
@@ -107,63 +129,8 @@ class LocationService
             'api_key' => config('barikoi.api_key'),
         ], $options);
         
-        // Nearby endpoint uses different base URL structure
-        $baseUrl = 'https://barikoi.xyz';
+        $baseUrl = config('barikoi.base_url');
         $client = new BarikoiClient(config('barikoi.api_key'), $baseUrl);
         return $client->get($endpoint, $params);
-    }
-
-    // Find places of specific category nearby
-    // Distance is in kilometers (e.g., 1 = 1000 meters)
-    // Note: This endpoint uses /v2/api path, so we use a different base URL
-    // Parameter name is 'ptype' not 'category'
-    public function nearbyWithCategory(float $longitude, float $latitude, string $category, float $distance = 1.0, int $limit = 10): array
-    {
-        $endpoint = "/v2/api/search/nearby/category/{$distance}/{$limit}";
-        $params = [
-            'longitude' => $longitude,
-            'latitude' => $latitude,
-            'ptype' => $category,  // API uses 'ptype' parameter
-            'api_key' => config('barikoi.api_key'),
-        ];
-        
-        // Nearby with category endpoint uses different base URL structure
-        $baseUrl = 'https://barikoi.xyz';
-        $client = new BarikoiClient(config('barikoi.api_key'), $baseUrl);
-        return $client->get($endpoint, $params);
-    }
-
-    // Find multiple types of places nearby
-    // Distance is in kilometers (e.g., 5 = 5000 meters)
-    // Types should be comma-separated in 'q' parameter (e.g., "School,ATM")
-    // Note: This endpoint uses /v2/api path, so we use a different base URL
-    public function nearbyWithTypes(float $longitude, float $latitude, array $types, float $distance = 5.0, int $limit = 5): array
-    {
-        if (empty($types)) {
-            throw new \InvalidArgumentException('At least one type is required');
-        }
-
-        $endpoint = "/v2/api/search/nearby/multi/type/{$distance}/{$limit}";
-        $params = [
-            'q' => implode(',', $types),  // API uses 'q' parameter for types
-            'longitude' => $longitude,
-            'latitude' => $latitude,
-            'api_key' => config('barikoi.api_key'),
-        ];
-        
-        // Nearby with types endpoint uses different base URL structure
-        $baseUrl = 'https://barikoi.xyz';
-        $client = new BarikoiClient(config('barikoi.api_key'), $baseUrl);
-        return $client->get($endpoint, $params);
-    }
-
-    // Check if point is inside polygon boundary
-    public function pointInPolygon(float $longitude, float $latitude, array $polygon): array
-    {
-        return $this->client->post('/point/polygon', [
-            'longitude' => $longitude,
-            'latitude' => $latitude,
-            'polygon' => json_encode($polygon),
-        ]);
     }
 }

@@ -94,6 +94,12 @@ class Barikoi
         return $this->location()->getPlaceDetails($placeCode, $options);
     }
 
+    // Alias for getPlaceDetails to support Barikoi::placeDetails(...)
+    public function placeDetails(string $placeCode, array $options = []): array
+    {
+        return $this->getPlaceDetails($placeCode, $options);
+    }
+
     // Snap GPS coordinates to nearest road
     public function snapToRoad(float $latitude, float $longitude): array
     {
@@ -131,7 +137,19 @@ class Barikoi
     // Shortcut methods - Call route methods directly
     // ============================================================================
 
-    // Calculate detailed route with navigation instructions (bike, motorcycle, car)
+    // Simple route overview between multiple points
+    public function routeOverview(array $points, array $options = []): array
+    {
+        return $this->route()->routeOverview($points, $options);
+    }
+
+    // Calculate detailed route between points (turn-by-turn style response)
+    public function calculateRoute(array $points, array $options = []): array
+    {
+        return $this->route()->detailed($points, $options);
+    }
+
+    // Calculate detailed navigation route (separate routing API)
     public function detailedNavigation(
         float $startLatitude,
         float $startLongitude,
@@ -152,5 +170,11 @@ class Barikoi
     public function optimizedRoute(string $source, string $destination, array $waypoints = [], array $options = []): array
     {
         return $this->route()->optimizedRoute($source, $destination, $waypoints, $options);
+    }
+
+    // Optimize route for multiple waypoints (TSP solution)
+    public function routeOptimize(array $points, array $options = []): array
+    {
+        return $this->route()->routeOptimize($points, $options);
     }
 }

@@ -1,10 +1,10 @@
 <?php
 
-namespace Vendor\PackageName\Tests\Unit;
+namespace Vendor\BarikoiApi\Tests\Unit;
 
-use Vendor\PackageName\Tests\TestCase;
-use Vendor\PackageName\Services\LocationService;
-use Vendor\PackageName\BarikoiClient;
+use Vendor\BarikoiApi\Tests\TestCase;
+use Vendor\BarikoiApi\Services\LocationService;
+use Vendor\BarikoiApi\BarikoiClient;
 use Illuminate\Support\Facades\Http;
 
 class LocationServiceTest extends TestCase
@@ -84,20 +84,50 @@ class LocationServiceTest extends TestCase
         });
     }
 
-    // Test autocomplete sends correct params
-    public function test_autocomplete_sends_correct_params()
+    // Test autocomplete sends correct params with allowed option
+    public function test_autocomplete_sends_correct_params_with_bangla_option()
     {
         Http::fake([
             '*' => Http::response(['status' => 200, 'places' => []], 200)
         ]);
 
-        $this->service->autocomplete('Dhanmondi', ['limit' => 10]);
+        $this->service->autocomplete('Dhanmondi', ['bangla' => true]);
 
         Http::assertSent(function ($request) {
             $url = $request->url();
             return str_contains($url, 'q=Dhanmondi')
-                && str_contains($url, 'limit=10');
+                && str_contains($url, 'bangla=1');
         });
+    }
+
+    // Test autocomplete throws validation exception for unsupported options
+    public function test_autocomplete_throws_for_unsupported_options()
+    {
+        $this->expectException(\Vendor\BarikoiApi\Exceptions\BarikoiValidationException::class);
+
+        $this->service->autocomplete('Dhanmondi', [
+            'limit' => 10,
+            'latitude' => 23.8,
+        ]);
+    }
+
+    // Test reverse geocode throws validation exception for invalid latitude/longitude
+    public function test_reverse_geocode_throws_for_invalid_coordinates()
+    {
+        $this->expectException(\Vendor\BarikoiApi\Exceptions\BarikoiValidationException::class);
+
+        // Latitude > 90 and longitude > 180 should trigger validation error
+        $this->service->reverseGeocode(181.0, 91.0);
+    }
+
+    // Test geocode throws validation exception when options are provided
+    public function test_geocode_throws_for_unsupported_options()
+    {
+        $this->expectException(\Vendor\BarikoiApi\Exceptions\BarikoiValidationException::class);
+
+        $this->service->geocode('shawrapara', [
+            'thana' => true,
+        ]);
     }
 
     // Test geocode uses POST method
@@ -111,7 +141,8 @@ class LocationServiceTest extends TestCase
 
         Http::assertSent(function ($request) {
             return $request->method() === 'POST'
-                && str_contains($request->url(), '/search/rupantor/geocode');
+                && str_contains($request->url(), '/search/rupantor/geocode')
+                && str_contains(urldecode($request->body()), 'q=Dhanmondi 27, Dhaka');
         });
     }
 
@@ -130,94 +161,42 @@ class LocationServiceTest extends TestCase
     }
 
     // Test nearby sends all required params
+    // nearby() creates its own client with base URL https://barikoi.xyz
+    // and uses distance/limit in URL path: /v2/api/search/nearby/{distance}/{limit}
     public function test_nearby_sends_all_params()
     {
         Http::fake([
             '*' => Http::response(['status' => 200, 'places' => []], 200)
         ]);
 
-        $this->service->nearby(90.3572, 23.8067, 2000);
+        // nearby(longitude, latitude, distance_km, limit)
+        $this->service->nearby(90.3572, 23.8067, 0.5, 10);
 
         Http::assertSent(function ($request) {
             $url = $request->url();
+            // Distance and limit are in URL path, not query params
             return str_contains($url, 'longitude=90.3572')
                 && str_contains($url, 'latitude=23.8067')
-                && str_contains($url, 'distance=2000');
+                && str_contains($url, '/nearby/0.5/10');
         });
     }
 
-    // Test nearby with category
-    public function test_nearby_with_category_sends_category()
-    {
-        Http::fake([
-            '*' => Http::response(['status' => 200, 'places' => []], 200)
-        ]);
-
-        $this->service->nearbyWithCategory(90.3572, 23.8067, 'restaurant', 1000);
-
-        Http::assertSent(function ($request) {
-            $url = $request->url();
-            return str_contains($url, 'category=restaurant')
-                && str_contains($url, '/nearby/category');
-        });
-    }
-
-    // Test nearby with types converts array to comma-separated
-    public function test_nearby_with_types_converts_array()
-    {
-        Http::fake([
-            '*' => Http::response(['status' => 200, 'places' => []], 200)
-        ]);
-
-        $this->service->nearbyWithTypes(90.3572, 23.8067, ['restaurant', 'hospital', 'pharmacy'], 1000);
-
-        Http::assertSent(function ($request) {
-            $url = $request->url();
-            return str_contains($url, 'types=restaurant%2Chospital%2Cpharmacy')
-                || str_contains($url, 'types=restaurant,hospital,pharmacy');
-        });
-    }
-
-    // Test snap to road encodes points as JSON
-    public function test_snap_to_road_encodes_points()
+    // Test snap to road accepts single point coordinates
+    // snapToRoad(latitude, longitude) - note: latitude first!
+    public function test_snap_to_road_sends_point()
     {
         Http::fake([
             '*' => Http::response(['status' => 200, 'points' => []], 200)
         ]);
 
-        $points = [
-            ['longitude' => 90.3572, 'latitude' => 23.8067],
-            ['longitude' => 90.3580, 'latitude' => 23.8070],
-        ];
-
-        $this->service->snapToRoad($points);
-
-        Http::assertSent(function ($request) use ($points) {
-            $url = $request->url();
-            $encodedPoints = urlencode(json_encode($points));
-            return str_contains($url, 'points=')
-                && str_contains($url, '/snap/road');
-        });
-    }
-
-    // Test point in polygon uses POST
-    public function test_point_in_polygon_uses_post()
-    {
-        Http::fake([
-            '*' => Http::response(['status' => 200, 'inside' => true], 200)
-        ]);
-
-        $polygon = [
-            ['longitude' => 90.35, 'latitude' => 23.80],
-            ['longitude' => 90.36, 'latitude' => 23.80],
-            ['longitude' => 90.36, 'latitude' => 23.81],
-        ];
-
-        $this->service->pointInPolygon(90.3572, 23.8067, $polygon);
+        // snapToRoad(latitude, longitude) sends as "lat,lng" in 'point' param
+        $this->service->snapToRoad(23.8067, 90.3572);
 
         Http::assertSent(function ($request) {
-            return $request->method() === 'POST'
-                && str_contains($request->url(), '/point/polygon');
+            $url = $request->url();
+            return str_contains($url, 'point=23.8067%2C90.3572')
+                || str_contains($url, 'point=23.8067,90.3572');
         });
     }
+
 }

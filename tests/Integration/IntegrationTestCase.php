@@ -1,8 +1,8 @@
 <?php
 
-namespace Vendor\PackageName\Tests\Integration;
+namespace Vendor\BarikoiApi\Tests\Integration;
 
-use Vendor\PackageName\Tests\TestCase;
+use Vendor\BarikoiApi\Tests\TestCase;
 
 /**
  * Base class for integration tests that make real API calls

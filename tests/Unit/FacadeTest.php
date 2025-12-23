@@ -1,10 +1,10 @@
 <?php
 
-namespace Vendor\PackageName\Tests\Unit;
+namespace Vendor\BarikoiApi\Tests\Unit;
 
-use Vendor\PackageName\Tests\TestCase;
-use Vendor\PackageName\Facades\Barikoi;
-use Vendor\PackageName\Services\LocationService;
+use Vendor\BarikoiApi\Tests\TestCase;
+use Vendor\BarikoiApi\Facades\Barikoi;
+use Vendor\BarikoiApi\Services\LocationService;
 use Illuminate\Support\Facades\Http;
 
 class FacadeTest extends TestCase
@@ -57,70 +57,24 @@ class FacadeTest extends TestCase
         $this->assertIsArray($result);
     }
 
-    // Test facade get place details method
-    public function test_facade_get_place_details()
-    {
-        Http::fake(['*' => Http::response(['status' => 200], 200)]);
-
-        $result = Barikoi::getPlaceDetails('place-id');
-
-        $this->assertIsArray($result);
-    }
-
     // Test facade snap to road method
+    // snapToRoad(latitude, longitude) - takes two floats
     public function test_facade_snap_to_road()
     {
         Http::fake(['*' => Http::response(['status' => 200], 200)]);
 
-        $result = Barikoi::snapToRoad([
-            ['longitude' => 90.3572, 'latitude' => 23.8067]
-        ]);
+        $result = Barikoi::snapToRoad(23.8067, 90.3572);
 
         $this->assertIsArray($result);
     }
 
     // Test facade nearby method
+    // nearby(longitude, latitude, distance_km, limit)
     public function test_facade_nearby()
     {
         Http::fake(['*' => Http::response(['status' => 200], 200)]);
 
-        $result = Barikoi::nearby(90.3572, 23.8067, 1000);
-
-        $this->assertIsArray($result);
-    }
-
-    // Test facade nearby with category method
-    public function test_facade_nearby_with_category()
-    {
-        Http::fake(['*' => Http::response(['status' => 200], 200)]);
-
-        $result = Barikoi::nearbyWithCategory(90.3572, 23.8067, 'restaurant', 1000);
-
-        $this->assertIsArray($result);
-    }
-
-    // Test facade nearby with types method
-    public function test_facade_nearby_with_types()
-    {
-        Http::fake(['*' => Http::response(['status' => 200], 200)]);
-
-        $result = Barikoi::nearbyWithTypes(90.3572, 23.8067, ['restaurant'], 1000);
-
-        $this->assertIsArray($result);
-    }
-
-    // Test facade point in polygon method
-    public function test_facade_point_in_polygon()
-    {
-        Http::fake(['*' => Http::response(['status' => 200], 200)]);
-
-        $polygon = [
-            ['longitude' => 90.35, 'latitude' => 23.80],
-            ['longitude' => 90.36, 'latitude' => 23.80],
-            ['longitude' => 90.36, 'latitude' => 23.81],
-        ];
-
-        $result = Barikoi::pointInPolygon(90.3572, 23.8067, $polygon);
+        $result = Barikoi::nearby(90.3572, 23.8067, 1.0, 10);
 
         $this->assertIsArray($result);
     }

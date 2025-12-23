@@ -1,8 +1,8 @@
 <?php
 
-namespace Vendor\PackageName\Tests\Integration;
+namespace Vendor\BarikoiApi\Tests\Integration;
 
-use Vendor\PackageName\Facades\Barikoi;
+use Vendor\BarikoiApi\Facades\Barikoi;
 
 /**
  * Integration tests that work with real Barikoi API
@@ -116,26 +116,6 @@ class RealApiWorkingTest extends IntegrationTestCase
             echo "  First result: {$result['places'][0]['address']}\n";
         } else {
             echo "\n✓ Search for 'ঢাকা' completed (response structure may vary)\n";
-        }
-    }
-
-    /**
-     * Test get divisions
-     *
-     * Scenario: Need list of all divisions for dropdown
-     * Expected: Get 8 divisions
-     */
-    public function test_get_divisions()
-    {
-        $result = Barikoi::administrative()->getDivisions();
-
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('places', $result);
-        $this->assertCount(8, $result['places']);
-
-        echo "\n✓ Retrieved 8 divisions:\n";
-        foreach ($result['places'] as $division) {
-            echo "  - {$division['name']}\n";
         }
     }
 

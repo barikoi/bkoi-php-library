@@ -1,8 +1,8 @@
 <?php
 
-namespace Vendor\PackageName\Tests\Integration;
+namespace Vendor\BarikoiApi\Tests\Integration;
 
-use Vendor\PackageName\Facades\Barikoi;
+use Vendor\BarikoiApi\Facades\Barikoi;
 
 /**
  * Debug test to see actual API responses
@@ -41,20 +41,6 @@ class DebugApiResponseTest extends IntegrationTestCase
     }
 
     /**
-     * Debug: See what divisions actually returns
-     */
-    public function test_debug_divisions()
-    {
-        $result = Barikoi::administrative()->getDivisions();
-
-        echo "\n\n=== DIVISIONS RESPONSE ===\n";
-        echo json_encode($result, JSON_PRETTY_PRINT);
-        echo "\n==========================\n\n";
-
-        $this->assertIsArray($result);
-    }
-
-    /**
      * Debug: See what geocode actually returns
      */
     public function test_debug_geocode()
@@ -73,7 +59,7 @@ class DebugApiResponseTest extends IntegrationTestCase
      */
     public function test_debug_route()
     {
-        $result = Barikoi::route()->overview([
+        $result = Barikoi::routeOverview([
             ['longitude' => 90.3563, 'latitude' => 23.8103],
             ['longitude' => 90.4125, 'latitude' => 23.7925],
         ]);

@@ -1,16 +1,27 @@
 <?php
 
-namespace Vendor\PackageName\Tests;
+namespace Vendor\BarikoiApi\Tests;
 
 use Orchestra\Testbench\TestCase as Orchestra;
-use Vendor\PackageName\PackageNameServiceProvider;
+use Vendor\BarikoiApi\BarikoiServiceProvider;
+use Illuminate\Support\Facades\Http;
 
 class TestCase extends Orchestra
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Enable Http recording for Discord notifications with curl commands
+        if (class_exists('Illuminate\Support\Facades\Http') && method_exists('Illuminate\Support\Facades\Http', 'record')) {
+            Http::record();
+        }
+    }
+
     protected function getPackageProviders($app)
     {
         return [
-            PackageNameServiceProvider::class,
+            BarikoiServiceProvider::class,
         ];
     }
 
@@ -23,5 +34,9 @@ class TestCase extends Orchestra
             'database' => ':memory:',
             'prefix'   => '',
         ]);
+
+        // Setup Barikoi configuration
+        $app['config']->set('barikoi.api_key', env('BARIKOI_API_KEY', 'test_api_key'));
+        $app['config']->set('barikoi.base_url', env('BARIKOI_BASE_URL', 'https://barikoi.xyz/v2/api'));
     }
 }

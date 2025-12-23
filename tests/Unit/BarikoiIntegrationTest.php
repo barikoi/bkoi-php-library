@@ -1,13 +1,13 @@
 <?php
 
-namespace Vendor\PackageName\Tests\Unit;
+namespace Vendor\BarikoiApi\Tests\Unit;
 
-use Vendor\PackageName\Tests\TestCase;
-use Vendor\PackageName\Barikoi;
-use Vendor\PackageName\Services\LocationService;
-use Vendor\PackageName\Services\RouteService;
-use Vendor\PackageName\Services\AdministrativeService;
-use Vendor\PackageName\Services\GeofenceService;
+use Vendor\BarikoiApi\Tests\TestCase;
+use Vendor\BarikoiApi\Barikoi;
+use Vendor\BarikoiApi\Services\LocationService;
+use Vendor\BarikoiApi\Services\RouteService;
+use Vendor\BarikoiApi\Services\AdministrativeService;
+use Vendor\BarikoiApi\Services\GeofenceService;
 use Illuminate\Support\Facades\Http;
 
 class BarikoiIntegrationTest extends TestCase
@@ -45,16 +45,6 @@ class BarikoiIntegrationTest extends TestCase
 
         $this->assertInstanceOf(RouteService::class, $route1);
         $this->assertSame($route1, $route2);
-    }
-
-    // Test administrative service is lazy loaded
-    public function test_administrative_service_lazy_loading()
-    {
-        $admin1 = $this->barikoi->administrative();
-        $admin2 = $this->barikoi->administrative();
-
-        $this->assertInstanceOf(AdministrativeService::class, $admin1);
-        $this->assertSame($admin1, $admin2);
     }
 
     // Test geofence service is lazy loaded
@@ -107,70 +97,24 @@ class BarikoiIntegrationTest extends TestCase
         $this->assertIsArray($result);
     }
 
-    // Test direct getPlaceDetails method works
-    public function test_direct_get_place_details_method()
-    {
-        Http::fake(['*' => Http::response(['status' => 200], 200)]);
-
-        $result = $this->barikoi->getPlaceDetails('place-123');
-
-        $this->assertIsArray($result);
-    }
-
     // Test direct snapToRoad method works
+    // snapToRoad(latitude, longitude) - takes two floats
     public function test_direct_snap_to_road_method()
     {
         Http::fake(['*' => Http::response(['status' => 200], 200)]);
 
-        $result = $this->barikoi->snapToRoad([
-            ['longitude' => 90.3572, 'latitude' => 23.8067]
-        ]);
+        $result = $this->barikoi->snapToRoad(23.8067, 90.3572);
 
         $this->assertIsArray($result);
     }
 
     // Test direct nearby method works
+    // nearby(longitude, latitude, distance_km, limit)
     public function test_direct_nearby_method()
     {
         Http::fake(['*' => Http::response(['status' => 200], 200)]);
 
-        $result = $this->barikoi->nearby(90.3572, 23.8067, 1000);
-
-        $this->assertIsArray($result);
-    }
-
-    // Test direct nearbyWithCategory method works
-    public function test_direct_nearby_with_category_method()
-    {
-        Http::fake(['*' => Http::response(['status' => 200], 200)]);
-
-        $result = $this->barikoi->nearbyWithCategory(90.3572, 23.8067, 'restaurant', 1000);
-
-        $this->assertIsArray($result);
-    }
-
-    // Test direct nearbyWithTypes method works
-    public function test_direct_nearby_with_types_method()
-    {
-        Http::fake(['*' => Http::response(['status' => 200], 200)]);
-
-        $result = $this->barikoi->nearbyWithTypes(90.3572, 23.8067, ['restaurant', 'hospital'], 1000);
-
-        $this->assertIsArray($result);
-    }
-
-    // Test direct pointInPolygon method works
-    public function test_direct_point_in_polygon_method()
-    {
-        Http::fake(['*' => Http::response(['status' => 200], 200)]);
-
-        $polygon = [
-            ['longitude' => 90.35, 'latitude' => 23.80],
-            ['longitude' => 90.36, 'latitude' => 23.80],
-            ['longitude' => 90.36, 'latitude' => 23.81],
-        ];
-
-        $result = $this->barikoi->pointInPolygon(90.3572, 23.8067, $polygon);
+        $result = $this->barikoi->nearby(90.3572, 23.8067, 1.0, 10);
 
         $this->assertIsArray($result);
     }

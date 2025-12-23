@@ -7,9 +7,7 @@ A comprehensive Laravel package for integrating [Barikoi API](https://barikoi.co
 ## Features
 
 - 🗺️ **Location Services**: Geocoding, Reverse Geocoding, Autocomplete, Place Search
-- 🛣️ **Routing**: Route calculation, optimization, and turn-by-turn navigation
-- 🏛️ **Administrative Data**: Divisions, Districts, Thanas, Unions, Wards, Zones
-- 📍 **Geofencing**: Create and manage geofences, check point locations
+- 🛣️ **Routing**: Route calculation and turn-by-turn navigation
 - 🔍 **Nearby Search**: Find places within a radius
 - 🛤️ **Snap to Road**: GPS coordinate correction
 - ⚠️ **Error Handling**: User-friendly exceptions with actionable error messages
@@ -46,20 +44,53 @@ Get your API key from [Barikoi](https://barikoi.com).
 ```php
 use Vendor\PackageName\Facades\Barikoi;
 
-// Get address from coordinates
-$address = Barikoi::reverseGeocode(90.3572, 23.8067);
+// 1. Reverse geocoding with rich options
+$options = [
+    'country_code' => 'BD',
+    'district' => true,
+    'post_code' => true,
+    'country' => true,
+    'sub_district' => true,
+    'union' => true,
+    'pauroshova' => true,
+    'location_type' => true,
+    'division' => true,
+    'address' => true,
+    'area' => true,
+    'bangla' => true,
+    'thana' => true,
+];
+$reverse = Barikoi::reverseGeocode(90.3572, 23.8067, $options);
 
-// Convert address to coordinates
-$coordinates = Barikoi::geocode('Dhanmondi, Dhaka');
+// 2. Detailed route between two points
+$route = Barikoi::calculateRoute([
+    ['longitude' => 90.3572, 'latitude' => 23.8067],
+    ['longitude' => 90.3680, 'latitude' => 23.8100],
+], [
+    'profile' => 'foot',
+    'geometries' => 'polyline6',
+]);
 
-// Get place suggestions
-$places = Barikoi::autocomplete('restaurant');
+// 3. Simple route overview
+$overview = Barikoi::routeOverview([
+    ['longitude' => 90.3572, 'latitude' => 23.8067],
+    ['longitude' => 90.3680, 'latitude' => 23.8100],
+], [
+    'profile' => 'car',
+    'geometries' => 'polyline',
+]);
 
-// Calculate route
-$route = Barikoi::route()->distance(90.3572, 23.8067, 90.3680, 23.8100);
+// 4. Geocode (Rupantor)
+$geocoded = Barikoi::geocode('D');
 
-// Check geofence
-$result = Barikoi::geofence()->checkGeofence(90.3572, 23.8067);
+// 5. Nearby search
+$nearby = Barikoi::nearby(90.38305163, 23.87188719, 0.5, 2);
+
+// 6. Search place by text
+$places = Barikoi::searchPlace('Dhanmondi');
+
+// 7. Snap to nearest road
+$snapped = Barikoi::snapToRoad(23.8067, 90.3572);
 ```
 
 ---
@@ -76,34 +107,13 @@ Complete documentation with parameters, conditions, and error handling for each 
 | - Reverse Geocoding | Convert coordinates to address |
 | - Geocoding (Rupantor) | Convert address to coordinates |
 | - Autocomplete | Place suggestions |
+| - Search Place | Text-based place search |
 | - Nearby Search | Find places within radius |
 | - Snap to Road | Correct GPS coordinates |
-| - Point in Polygon | Check point inside area |
 | | |
 | **Routing Services** | [docs/routing-api.md](docs/routing-api.md) |
 | - Route Overview | Simple route calculation |
-| - Detailed Route | Turn-by-turn directions |
-| - Distance Calculation | Quick distance check |
-| - Route Optimization | Optimize waypoint order |
-| - Advanced Optimization | Up to 50 waypoints |
-| - Detailed Navigation | Step-by-step navigation |
-| - Route Match | Match GPS to roads |
-| | |
-| **Administrative Services** | [docs/administrative-api.md](docs/administrative-api.md) |
-| - Divisions | Get all divisions |
-| - Districts | Get districts |
-| - Subdistricts | Get upazilas |
-| - Thanas | Get police stations |
-| - Unions | Get unions |
-| - Wards & Zones | Get city corporation data |
-| | |
-| **Geofencing Services** | [docs/geofencing-api.md](docs/geofencing-api.md) |
-| - Create Geofence | Set geofence point |
-| - Get Geofences | List all geofences |
-| - Update Geofence | Modify geofence |
-| - Delete Geofence | Remove geofence |
-| - Check Geofence | Check if point inside |
-| - Check Nearby | Check distance from point |
+| - Detailed Route | Turn-by-turn route with options |
 
 ---
 
@@ -231,7 +241,7 @@ public function calculateRoute(Request $request)
         $origin = ['longitude' => 90.3572, 'latitude' => 23.8067];
         $destination = ['longitude' => 90.3680, 'latitude' => 23.8100];
 
-        $route = Barikoi::route()->detailed([$origin, $destination], [
+        $route = Barikoi::calculateRoute([$origin, $destination], [
             'steps' => true
         ]);
 
