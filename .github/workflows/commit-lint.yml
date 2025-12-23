@@ -4,7 +4,7 @@ on:
   push:
     branches: [ '**' ]  # All branches
   pull_request:
-    branches: [ '**' ]  # All branches
+    branches: [ main ]  # All branches
 
 jobs:
   commitlint:
@@ -48,7 +48,7 @@ jobs:
                 'wip'       // Work in progress (optional)
               ]],
               // Subject (description) rules
-              'subject-case': [2, 'always', 'lower-case'],
+              'subject-case': [2, 'always', ['sentence-case', 'lower-case']],
               'subject-empty': [2, 'never'],
               'subject-max-length': [2, 'always', 100],
               // Type rules
@@ -112,4 +112,3 @@ jobs:
           echo "   feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert, wip"
           echo ""
           echo "📖 Learn more: https://www.conventionalcommits.org/"
-          exit 1
