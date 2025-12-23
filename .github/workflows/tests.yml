@@ -65,17 +65,29 @@ jobs:
           sed -i "s|CI=.*|CI=true|" .env
 
       - name: Execute Unit & Feature Tests
+        env:
+          LARAVEL_VERSION: ${{ matrix.laravel }}
+          TESTBENCH_VERSION: ${{ matrix.testbench }}
+          DEPENDENCY_VERSION: ${{ matrix.dependency-version }}
         run: |
           vendor/bin/phpunit --testsuite Unit
           vendor/bin/phpunit --testsuite Feature
 
       - name: Execute Integration Tests
         if: env.BARIKOI_API_KEY != ''
+        env:
+          LARAVEL_VERSION: ${{ matrix.laravel }}
+          TESTBENCH_VERSION: ${{ matrix.testbench }}
+          DEPENDENCY_VERSION: ${{ matrix.dependency-version }}
         run: vendor/bin/phpunit --testsuite Integration
         continue-on-error: true
 
       - name: Execute All Tests with Coverage
         if: matrix.php == '8.2' && matrix.laravel == '11.*' && matrix.dependency-version == 'prefer-stable'
+        env:
+          LARAVEL_VERSION: ${{ matrix.laravel }}
+          TESTBENCH_VERSION: ${{ matrix.testbench }}
+          DEPENDENCY_VERSION: ${{ matrix.dependency-version }}
         run: vendor/bin/phpunit --coverage-text --coverage-clover=coverage.xml
 
   code-quality:
