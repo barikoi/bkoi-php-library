@@ -57,11 +57,12 @@ jobs:
       - name: Create .env file for tests
         run: |
           cp .env.example .env
-          echo "BARIKOI_API_KEY=${{ secrets.BARIKOI_API_KEY }}" >> .env
-          echo "BARIKOI_BASE_URL=https://barikoi.xyz" >> .env
-          echo "DISCORD_WEBHOOK_URL=${{ secrets.DISCORD_WEBHOOK_URL }}" >> .env
-          echo "DISCORD_NOTIFICATIONS_ENABLED=true" >> .env
-          echo "CI=true" >> .env
+          # Replace placeholder values with actual secrets (sed -i for in-place edit)
+          sed -i "s|BARIKOI_API_KEY=.*|BARIKOI_API_KEY=${{ secrets.BARIKOI_API_KEY }}|" .env
+          sed -i "s|BARIKOI_BASE_URL=.*|BARIKOI_BASE_URL=https://barikoi.xyz|" .env
+          sed -i "s|DISCORD_WEBHOOK_URL=.*|DISCORD_WEBHOOK_URL=${{ secrets.DISCORD_WEBHOOK_URL }}|" .env
+          sed -i "s|DISCORD_NOTIFICATIONS_ENABLED=.*|DISCORD_NOTIFICATIONS_ENABLED=true|" .env
+          sed -i "s|CI=.*|CI=true|" .env
 
       - name: Execute Unit & Feature Tests
         run: |
