@@ -8,6 +8,13 @@ use Illuminate\Support\Facades\Http;
 
 class TestCase extends Orchestra
 {
+    /**
+     * The latest test response (required by Orchestra Testbench).
+     *
+     * @var \Illuminate\Testing\TestResponse|null
+     */
+    public static $latestResponse;
+
     protected function setUp(): void
     {
         parent::setUp();
