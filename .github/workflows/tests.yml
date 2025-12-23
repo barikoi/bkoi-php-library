@@ -64,7 +64,9 @@ jobs:
           echo "CI=true" >> .env
 
       - name: Execute Unit & Feature Tests
-        run: vendor/bin/phpunit --testsuite Unit --testsuite Feature
+        run: |
+          vendor/bin/phpunit --testsuite Unit
+          vendor/bin/phpunit --testsuite Feature
 
       - name: Execute Integration Tests
         if: env.BARIKOI_API_KEY != ''

@@ -180,32 +180,70 @@ class DiscordNotifier
     }
 
     /**
-     * Send payload to Discord webhook
+     * Send payload to Discord webhook with rate limit handling
      */
-    protected function sendToDiscord(array $payload): void
+    protected function sendToDiscord(array $payload, int $maxRetries = 3): void
     {
         if (!$this->webhookUrl) {
             return;
         }
 
-        try {
-            $ch = curl_init($this->webhookUrl);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+        $attempt = 0;
+        while ($attempt <= $maxRetries) {
+            try {
+                $ch = curl_init($this->webhookUrl);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+                curl_setopt($ch, CURLOPT_POST, 1);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
 
-            $response = curl_exec($ch);
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            $curlError = curl_error($ch);
+                $response = curl_exec($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                $curlError = curl_error($ch);
 
-            curl_close($ch);
+                curl_close($ch);
 
-            if ($httpCode !== 204 && $httpCode !== 200) {
+                // Success
+                if ($httpCode === 204 || $httpCode === 200) {
+                    return;
+                }
+
+                // Handle rate limiting (429)
+                if ($httpCode === 429) {
+                    $retryAfter = 0.3; // Default retry after 0.3 seconds
+                    
+                    // Try to parse retry_after from response
+                    if ($response) {
+                        $responseData = json_decode($response, true);
+                        if (isset($responseData['retry_after'])) {
+                            $retryAfter = (float) $responseData['retry_after'];
+                        }
+                    }
+
+                    // Add small buffer to retry_after to be safe
+                    $retryAfter += 0.1;
+                    
+                    if ($attempt < $maxRetries) {
+                        // Wait and retry
+                        usleep((int) ($retryAfter * 1000000)); // Convert seconds to microseconds
+                        $attempt++;
+                        continue;
+                    } else {
+                        // Max retries reached
+                        $errorMsg = "Discord notification failed: Rate limited after {$maxRetries} retries";
+                        if ($response) {
+                            $errorMsg .= " | Response: " . substr($response, 0, 200);
+                        }
+                        error_log($errorMsg);
+                        return;
+                    }
+                }
+
+                // Other HTTP errors
                 $errorMsg = "Discord notification failed with HTTP code: {$httpCode}";
                 if ($curlError) {
                     $errorMsg .= " | cURL error: {$curlError}";
@@ -214,9 +252,18 @@ class DiscordNotifier
                     $errorMsg .= " | Response: " . substr($response, 0, 200);
                 }
                 error_log($errorMsg);
+                return;
+            } catch (Exception $e) {
+                if ($attempt < $maxRetries) {
+                    // Wait a bit before retrying on exception
+                    usleep(300000); // 0.3 seconds
+                    $attempt++;
+                    continue;
+                } else {
+                    error_log("Failed to send Discord notification: " . $e->getMessage());
+                    return;
+                }
             }
-        } catch (Exception $e) {
-            error_log("Failed to send Discord notification: " . $e->getMessage());
         }
     }
 
