@@ -5,12 +5,9 @@ namespace Vendor\BarikoiApi\Tests;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Vendor\BarikoiApi\BarikoiServiceProvider;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Foundation\Testing\Concerns\MakesHttpRequests;
 
 class TestCase extends Orchestra
 {
-    use MakesHttpRequests;
-
     protected function setUp(): void
     {
         parent::setUp();

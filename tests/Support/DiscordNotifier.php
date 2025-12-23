@@ -9,6 +9,18 @@ class DiscordNotifier
     protected ?string $webhookUrl;
     protected bool $enabled;
 
+    /**
+     * Track last notification time for rate limiting
+     * @var float|null
+     */
+    protected static ?float $lastNotificationTime = null;
+
+    /**
+     * Minimum delay between notifications in seconds
+     * Discord webhooks allow ~5 requests per 2 seconds, so we use 0.5s minimum
+     */
+    protected const MIN_DELAY_BETWEEN_NOTIFICATIONS = 0.5;
+
     public function __construct()
     {
         // Try Laravel's env() helper first, fallback to getenv()
@@ -182,11 +194,14 @@ class DiscordNotifier
     /**
      * Send payload to Discord webhook with rate limit handling
      */
-    protected function sendToDiscord(array $payload, int $maxRetries = 3): void
+    protected function sendToDiscord(array $payload, int $maxRetries = 5): void
     {
         if (!$this->webhookUrl) {
             return;
         }
+
+        // Enforce minimum delay between notifications to prevent rate limiting
+        $this->enforceRateLimit();
 
         $attempt = 0;
         while ($attempt <= $maxRetries) {
@@ -209,13 +224,14 @@ class DiscordNotifier
 
                 // Success
                 if ($httpCode === 204 || $httpCode === 200) {
+                    self::$lastNotificationTime = microtime(true);
                     return;
                 }
 
                 // Handle rate limiting (429)
                 if ($httpCode === 429) {
-                    $retryAfter = 0.3; // Default retry after 0.3 seconds
-                    
+                    $retryAfter = 1.0; // Default retry after 1 second
+
                     // Try to parse retry_after from response
                     if ($response) {
                         $responseData = json_decode($response, true);
@@ -224,12 +240,13 @@ class DiscordNotifier
                         }
                     }
 
-                    // Add small buffer to retry_after to be safe
-                    $retryAfter += 0.1;
-                    
+                    // Use exponential backoff: base delay + attempt multiplier
+                    $backoffMultiplier = min($attempt + 1, 4); // Cap at 4x
+                    $delaySeconds = ($retryAfter + 0.2) * $backoffMultiplier; // Add 0.2s buffer
+
                     if ($attempt < $maxRetries) {
-                        // Wait and retry
-                        usleep((int) ($retryAfter * 1000000)); // Convert seconds to microseconds
+                        // Wait and retry with exponential backoff
+                        usleep((int) ($delaySeconds * 1000000)); // Convert seconds to microseconds
                         $attempt++;
                         continue;
                     } else {
@@ -255,8 +272,10 @@ class DiscordNotifier
                 return;
             } catch (Exception $e) {
                 if ($attempt < $maxRetries) {
-                    // Wait a bit before retrying on exception
-                    usleep(300000); // 0.3 seconds
+                    // Use exponential backoff for exceptions too
+                    $backoffMultiplier = min($attempt + 1, 4);
+                    $delaySeconds = 0.5 * $backoffMultiplier;
+                    usleep((int) ($delaySeconds * 1000000));
                     $attempt++;
                     continue;
                 } else {
@@ -265,6 +284,27 @@ class DiscordNotifier
                 }
             }
         }
+    }
+
+    /**
+     * Enforce minimum delay between Discord notifications to prevent rate limiting
+     */
+    protected function enforceRateLimit(): void
+    {
+        if (self::$lastNotificationTime === null) {
+            self::$lastNotificationTime = microtime(true);
+            return;
+        }
+
+        $timeSinceLastNotification = microtime(true) - self::$lastNotificationTime;
+        $requiredDelay = self::MIN_DELAY_BETWEEN_NOTIFICATIONS - $timeSinceLastNotification;
+
+        if ($requiredDelay > 0) {
+            // Sleep for the remaining time to meet minimum delay
+            usleep((int) ($requiredDelay * 1000000));
+        }
+
+        self::$lastNotificationTime = microtime(true);
     }
 
     /**
