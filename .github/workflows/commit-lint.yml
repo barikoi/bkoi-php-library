@@ -71,26 +71,23 @@ jobs:
           # Validate only the latest commit on push
           npx commitlint --from HEAD~1 --to HEAD --verbose
 
-      - name: Check for duplicate commit messages
+      - name: Check for duplicate commit messages in PR
+        if: github.event_name == 'pull_request'
         run: |
-          echo "Checking for duplicate commit messages..."
+          echo "Checking for duplicate commit messages in this PR..."
 
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            COMMITS=$(git log --format="%s" ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }})
-          else
-            COMMITS=$(git log --format="%s" -10)
-          fi
+          COMMITS=$(git log --format="%s" ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }})
 
           DUPLICATES=$(echo "$COMMITS" | sort | uniq -d)
 
           if [ -n "$DUPLICATES" ]; then
-            echo "❌ Duplicate commit messages found:"
+            echo "❌ Duplicate commit messages found in this PR:"
             echo "$DUPLICATES"
             echo ""
             echo "Each commit should have a unique, descriptive message."
             exit 1
           else
-            echo "✅ All commit messages are unique"
+            echo "✅ All commit messages in this PR are unique"
           fi
 
       - name: Show valid commit format on failure
