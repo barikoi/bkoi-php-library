@@ -133,4 +133,6 @@ class LocationService
         $client = new BarikoiClient(config('barikoi.api_key'), $baseUrl);
         return $client->get($endpoint, $params);
     }
+
+
 }

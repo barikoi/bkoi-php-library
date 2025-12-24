@@ -439,3 +439,88 @@ try {
 | 400 | `BarikoiValidationException` | Invalid coordinates | Check latitude/longitude values |
 
 ---
+
+## Check Nearby
+
+Check if the current location is within a specified radius of a destination point.
+
+### Method
+
+```php
+Barikoi::checkNearby(
+    float $destinationLatitude,
+    float $destinationLongitude,
+    float $currentLatitude,
+    float $currentLongitude,
+    float $radius = 50
+)
+```
+
+### Parameters
+
+| Parameter              | Type  | Required | Description                                      |
+|------------------------|-------|----------|--------------------------------------------------|
+| `destinationLatitude`  | float | Yes      | Latitude of the destination (-90 to 90)          |
+| `destinationLongitude` | float | Yes      | Longitude of the destination (-180 to 180)       |
+| `currentLatitude`      | float | Yes      | Latitude of the current location (-90 to 90)     |
+| `currentLongitude`     | float | Yes      | Longitude of the current location (-180 to 180)  |
+| `radius`               | float | No       | Radius in meters (default: 50, must be positive) |
+
+### Usage
+
+```php
+use Vendor\PackageName\Facades\Barikoi;
+use Vendor\PackageName\Exceptions\BarikoiValidationException;
+use Vendor\PackageName\Exceptions\BarikoiApiException;
+
+try {
+    $result = Barikoi::checkNearby(
+        23.76245538673939,
+        90.37852866512583,
+        23.762412943322726,
+        90.37864864706823,
+        50
+    );
+
+    $isNearby = $result['is_nearby'] ?? false;
+
+} catch (BarikoiValidationException $e) {
+    echo "Invalid coordinates: " . $e->getMessage();
+} catch (BarikoiApiException $e) {
+    echo "API error: " . $e->getMessage();
+}
+```
+
+### Response
+
+```php
+{
+"message": "Inside geo fence",
+"status": 200,
+"data": {
+        "id": "635085",
+        "name": "Songsodh vaban",
+        "radius": "55",
+        "longitude": "90.37852866512583",
+        "latitude": "23.76245538673939",
+        "user_id": 2978
+        }
+}
+```
+
+### Conditions
+
+- All latitude values must be between -90 and 90
+- All longitude values must be between -180 and 180
+- Radius must be a positive number
+
+### Error Handling
+
+| Error Code | Exception                   | Cause                        | Solution                    |
+|------------|----------------------------|------------------------------|-----------------------------|
+| 400        | BarikoiValidationException | Invalid coordinates or radius| Check input values          |
+| 401        | BarikoiApiException        | Invalid API key              | Check credentials           |
+| 404        | BarikoiApiException        | Location not found           | Verify coordinates          |
+| 429        | BarikoiApiException        | Rate limit exceeded          | Reduce request frequency    |
+| 500        | BarikoiApiException        | Server error                 | Retry after some time       |
+

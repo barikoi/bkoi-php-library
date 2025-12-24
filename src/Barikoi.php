@@ -113,6 +113,14 @@ class Barikoi
         return $this->location()->nearby($longitude, $latitude, $distance, $limit, $options);
     }
 
+    // Check nearby location within a specified radius
+    // Determine if a current location is within a specified radius of a destination point
+    // Radius in meters (default 50m)
+    public function checkNearby(float $destinationLatitude,float $destinationLongitude,float $currentLatitude,float $currentLongitude,float $radius = 50): array
+    {
+        return $this->geofence()->checkNearby($destinationLatitude, $destinationLongitude, $currentLatitude, $currentLongitude, $radius);
+    }
+
     // Find places of specific category nearby
     // Distance in kilometers (e.g., 1.0 = 1000 meters), limit is max results
     public function nearbyWithCategory(float $longitude, float $latitude, string $category, float $distance = 1.0, int $limit = 10): array
