@@ -145,6 +145,7 @@ class DiscordNotifier
         ];
     }
 
+    
     /**
      * Build Discord embed payload for test summary
      */
