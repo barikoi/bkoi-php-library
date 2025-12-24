@@ -43,7 +43,7 @@ class TestCase extends Orchestra
         ]);
 
         // Setup Barikoi configuration
-        $app['config']->set('barikoi.api_key', env('BARIKOI_API_KEY', 'test_api_key'));
-        $app['config']->set('barikoi.base_url', env('BARIKOI_BASE_URL', 'https://barikoi.xyz/v2/api'));
+        $app['config']->set('barikoi.api_key', env('BARIKOI_API_KEY', 'bkoi_aba4dcd19f34e638f43d72fd857586e72927c07d7e21b7102cc9757cdd7ce5d6'));
+        $app['config']->set('barikoi.base_url', env('BARIKOI_BASE_URL', 'https://barikoi.xyz/'));
     }
 }
