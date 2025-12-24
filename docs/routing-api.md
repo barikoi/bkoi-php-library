@@ -61,7 +61,7 @@ try {
         ['longitude' => 90.3680, 'latitude' => 23.8100],
     ];
 
-    // Car route
+    // Car route (returns stdClass object)
     $route = Barikoi::routeOverview($points);
 
     // Walking route
@@ -69,8 +69,12 @@ try {
         'profile' => 'foot'
     ]);
 
-    $distance = $route['distance']; // in meters
-    $duration = $route['duration']; // in seconds
+    // Access response (object / stdClass)
+    $thisRoute = $route->routes[0] ?? null;
+    if ($thisRoute) {
+        $distance = $thisRoute['distance']; // in meters
+        $duration = $thisRoute['duration']; // in seconds
+    }
 
 } catch (BarikoiValidationException $e) {
     echo "Invalid route: " . $e->getMessage();
@@ -80,12 +84,17 @@ try {
 ### Response
 
 ```php
-[
-    'distance' => 1234,        // meters
-    'duration' => 456,         // seconds
-    'geometry' => '...',       // encoded polyline
-    'status' => 200
-]
+{
+    "code": "Ok",
+    "routes": [
+        {
+            "distance": 1234,        // meters
+            "duration": 456,         // seconds
+            "geometry": "..."        // encoded polyline (polyline6 when requested)
+        }
+        // ... possibly more routes
+    ]
+}
 ```
 
 ### Conditions
@@ -106,102 +115,98 @@ try {
 
 ---
 
-## Detailed Route
+## Detailed Route (Navigation API)
 
-Get route with turn-by-turn directions.
+Get detailed navigation route with turn-by-turn maneuvers.
 
 ### Method
 
 ```php
-Barikoi::calculateRoute(array $points, array $options = [])
+Barikoi::detailedNavigation(float $startLat, float $startLng, float $destLat, float $destLng, array $options = [])
 ```
 
 ### Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `points` | array | Yes | Array of coordinate objects |
-| `options` | array | No | Routing options |
+| `startLat` | float | Yes | Start latitude |
+| `startLng` | float | Yes | Start longitude |
+| `destLat` | float | Yes | Destination latitude |
+| `destLng` | float | Yes | Destination longitude |
+| `options` | array | No | Routing options (`type`, `profile`, `country_code`) |
 
 ### Options
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `profile` | string | 'car' | Transportation mode |
-| `steps` | boolean | false | Include turn-by-turn steps |
-| `alternatives` | boolean | false | Include alternative routes |
+| `type` | string | `'vh'` | Routing engine type (`vh` or `gh`) |
+| `profile` | string | `'motorcycle'` | Transport profile: `motorcycle`, `car`, or `bike` |
+| `country_code` | string | `'bgd'` | ISO Alpha-3 country code |
 
 ### Usage
 
 ```php
-try {
-    $points = [
-        ['longitude' => 90.3572, 'latitude' => 23.8067],
-        ['longitude' => 90.3680, 'latitude' => 23.8100],
-    ];
+use Vendor\PackageName\Facades\Barikoi;
 
-    $route = Barikoi::calculateRoute($points, [
-        'profile' => 'car',
-        'steps' => true,
-        'alternatives' => true,
-    ]);
+// Basic navigation (returns stdClass with \"trip\")
+$result = Barikoi::detailedNavigation(
+    23.791645065364126, 90.36558776260725,
+    23.784715477921843, 90.3676300089066,
+    ['type' => 'vh'] // motorcycle default
+);
 
-    // Main route
-    $mainRoute = $route['routes'][0];
-
-    // Turn-by-turn instructions
-    foreach ($mainRoute['legs'][0]['steps'] as $step) {
-        echo $step['instruction'];
-        echo "Distance: " . $step['distance'] . "m";
+// Access trip summary
+$trip = $result->trip ?? null;
+if ($trip) {
+    $legs = $trip['legs'] ?? [];
+    $firstLeg = $legs[0] ?? null;
+    if ($firstLeg) {
+        $maneuvers = $firstLeg['maneuvers'] ?? [];
+        foreach ($maneuvers as $maneuver) {
+            echo $maneuver['instruction'] . PHP_EOL;
+        }
     }
-
-    // Alternative routes
-    if (isset($route['routes'][1])) {
-        $alternativeRoute = $route['routes'][1];
-    }
-
-} catch (BarikoiValidationException $e) {
-    echo "Route error: " . $e->getMessage();
 }
 ```
 
 ### Response
 
 ```php
-[
-    'routes' => [
-        [
-            'distance' => 1234,
-            'duration' => 456,
-            'geometry' => '...',
-            'legs' => [
-                [
-                    'steps' => [
-                        [
-                            'instruction' => 'Head north on Road ABC',
-                            'distance' => 100,
-                            'duration' => 20,
-                        ],
-                        // ... more steps
-                    ]
-                ]
-            ]
+{
+    "trip": {
+        "locations": [
+            { "type": "break", "lat": 23.791645, "lon": 90.365587 },
+            { "type": "break", "lat": 23.784715, "lon": 90.36763 }
         ],
-        // ... alternative routes if requested
-    ],
-    'status' => 200
-]
+        "legs": [
+            {
+                "maneuvers": [
+                    {
+                        "instruction": "Drive north.",
+                        "time": 1.011,
+                        "length": 0.006,
+                        "cost": 1.213
+                    }
+                    // ... more maneuvers
+                ],
+                "summary": {
+                    "length": 2.34,
+                    "time": 320
+                }
+            }
+        ]
+    }
+}
 ```
 
 ### Conditions
 
-- Minimum 2 points
-- Steps only available with `steps: true`
-- Alternatives may not always be available
+- Start and destination must be valid coordinates
+- Supported profiles depend on `type` (`vh` vs `gh`)
 
 ### Error Handling
 
-Same as Route Overview
+- Returns an object with `status`, `error`, and `message` for invalid `type`/`profile` combinations.
 
 ---
 

@@ -48,7 +48,7 @@ use Vendor\PackageName\Exceptions\BarikoiValidationException;
 use Vendor\PackageName\Exceptions\BarikoiApiException;
 
 try {
-    // Basic usage
+    // Basic usage (returns stdClass)
     $result = Barikoi::reverseGeocode(90.3572, 23.8067);
 
     // With all options
@@ -68,9 +68,9 @@ try {
         'thana' => true,
     ]);
 
-    // Access response
-    $address = $result['place']['address'];
-    $district = $result['place']['district'];
+    // Access response (object / stdClass)
+    $address = $result->place->address;
+    $district = $result->place->district;
 
 } catch (BarikoiValidationException $e) {
     // Invalid coordinates
@@ -84,20 +84,23 @@ try {
 ### Response
 
 ```php
-[
-    'place' => [
-        'id' => 443524,
-        'distance_within_meters' => 24.7438,
-        'address' => 'Shahbagh Road, Shahbagh, Dhaka',
-        'area' => 'Shahbagh',
-        'city' => 'Dhaka',
-        'district' => 'Dhaka',  // if requested
-        'postCode' => 1000,      // if requested
-        'country_code' => 'bd',  // if provided
-    ],
-    'status' => 200
-]
+{
+    "place": {
+        "id": 443524,
+        "distance_within_meters": 24.7438,
+        "address": "Shahbagh Road, Shahbagh, Dhaka",
+        "area": "Shahbagh",
+        "city": "Dhaka",
+        "district": "Dhaka",   // if requested
+        "postCode": 1000,      // if requested
+        "country_code": "bd"   // if provided
+    },
+    "status": 200
+}
 ```
+
+> **Note:** In PHP, `Barikoi::reverseGeocode()` returns a `stdClass` object that mirrors this JSON shape.  
+> Access fields using `->` (for example, `$result->place->address`, `$result->status`).
 
 ### Conditions
 
@@ -129,7 +132,7 @@ Convert address text to GPS coordinates.
 ### Method
 
 ```php
-Barikoi::geocode(string $address)
+Barikoi::geocode(string $address, array $options = [])
 ```
 
 ### Parameters
@@ -137,20 +140,39 @@ Barikoi::geocode(string $address)
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `address` | string | Yes | Address in Bengali or English (sent as `q` parameter) |
+| `options` | array | No | Additional options |
 
-> **Note:** For the geocode API, **only** the `q` (address) parameter is supported.  
-> Passing any additional options will result in a `BarikoiValidationException`.
+### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `thana` | boolean | false | Include thana information |
+| `district` | boolean | false | Include district information |
+| `bangla` | boolean | false | Include Bangla address |
 
 ### Usage
 
 ```php
+use Vendor\PackageName\Facades\Barikoi;
+use Vendor\PackageName\Exceptions\BarikoiValidationException;
+use Vendor\PackageName\Exceptions\BarikoiApiException;
+
 try {
-    // Basic usage (only address)
+    // Basic usage (returns stdClass object)
     $result = Barikoi::geocode('shawrapara');
 
-    $coordinates = $result['geocoded_address']['geo_location'];
+    // With all options
+    $result = Barikoi::geocode('shawrapara', [
+        'thana' => true,
+        'district' => true,
+        'bangla' => true,
+    ]);
+
+    // Access response (object / stdClass)
+    $coordinates = $result->geocoded_address->geo_location;
     $latitude = $coordinates[1];
     $longitude = $coordinates[0];
+    $address = $result->geocoded_address->address;
 
 } catch (BarikoiValidationException $e) {
     echo "Invalid address: " . $e->getMessage();
@@ -162,23 +184,28 @@ try {
 ### Response
 
 ```php
-[
-    'given_address' => 'Dhanmondi, Dhaka',
-    'fixed_address' => 'dhanmondi',
-    'address_status' => 'incomplete',
-    'confidence_score_percentage' => 50,
-    'status' => 200,
-    'geocoded_address' => [
-        'latitude' => '23.7459408',
-        'longitude' => '90.37546663',
-        'geo_location' => [90.37546663, 23.7459408],
-        'address' => 'Dhanmondi, Dhanmondi, Dhaka',
-        'area' => 'Dhanmondi',
-        'city' => 'Dhaka',
-        'postcode' => 1209,
-    ]
-]
+{
+    "given_address": "shawrapara",
+    "fixed_address": "shawrapara",
+    "address_status": "complete",
+    "confidence_score_percentage": 95,
+    "status": 200,
+    "geocoded_address": {
+        "latitude": "23.7459408",
+        "longitude": "90.37546663",
+        "geo_location": [90.37546663, 23.7459408],
+        "address": "Shawrapara, Mirpur, Dhaka",
+        "area": "Mirpur",
+        "city": "Dhaka",
+        "postcode": 1216,
+        "district": "Dhaka",   // if requested
+        "thana": "Mirpur",     // if requested
+    }
+}
 ```
+
+> **Note:** In PHP, `Barikoi::geocode()` returns a `stdClass` object that mirrors this JSON shape.
+> Access fields using `->` (for example, `$result->geocoded_address->address`, `$result->status`).
 
 ### Conditions
 
@@ -211,15 +238,16 @@ Barikoi::autocomplete(string $query, array $options = [])
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `query` | string | Yes | Search query (min 2 characters), sent as `q` |
-| `options` | array | No | Currently only `bangla` is supported |
+| `options` | array | No | Supports `bangla`, `city`, `sub_area`, `sub_district` |
 
 ### Supported Options
-
-> **Note:** For the autocomplete API, **only** the `q` parameter and the `bangla` option are supported.
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `bangla` | boolean | false | When `true`, returns Bangla text in the response (where available) |
+| `city` | string | `null` | Filter results by city name (e.g., `dhaka`) |
+| `sub_area` | boolean | false | Include sub-area information in results |
+| `sub_district` | boolean | false | Include sub-district information in results |
 
 ### Usage
 
@@ -228,12 +256,15 @@ try {
     // Basic autocomplete
     $suggestions = Barikoi::autocomplete('Dhan');
 
-    // With Bangla results
-    $suggestions = Barikoi::autocomplete('restaurant', [
+    // With Bangla and city filter
+    $suggestions = Barikoi::autocomplete('barikoi', [
         'bangla' => true,
+        'city' => 'dhaka',
+        'sub_area' => true,
+        'sub_district' => true,
     ]);
 
-    foreach ($suggestions['places'] as $place) {
+    foreach ($suggestions->places as $place) {
         echo $place['address'];
     }
 
@@ -245,19 +276,34 @@ try {
 ### Response
 
 ```php
-[
-    'places' => [
-        [
-            'id' => 123,
-            'address' => 'Dhanmondi, Dhaka',
-            'area' => 'Dhanmondi',
-            'city' => 'Dhaka',
-        ],
+{
+    "places": [
+        {
+            "id": 3354,
+            "longitude": "90.36402004477634",
+            "latitude": "23.823730671721",
+            "address": "Barikoi HQ (barikoi.com), Dr Mohsin Plaza, House 2/7, Begum Rokeya Sarani, Pallabi, Mirpur, Dhaka",
+            "address_bn": "বাড়িকই HQ (বারিকই.কম), ডঃ মহসিন প্লাজা, বাড়ি ২/৭, বেগম রোকেয়া সরণী, পল্লবী, মিরপুর, ঢাকা, ঢাকা",
+            "city": "Dhaka",
+            "city_bn": "ঢাকা",
+            "area": "Mirpur",
+            "area_bn": "মিরপুর",
+            "postCode": 1216,
+            "pType": "Office",
+            "subType": "Head Office",
+            "district": "Dhaka",
+            "uCode": "BKOI2017",
+            "sub_area": "Pallabi",
+            "sub_district": "Pallabi"
+        }
         // ... more results
     ],
-    'status' => 200
-]
+    "status": 200
+}
 ```
+
+> **Note:** In PHP, `Barikoi::autocomplete()` returns a `stdClass` object that mirrors this JSON shape.  
+> Access fields using `->` (for example, `$suggestions->places[0]['address']`, `$suggestions->status`).
 
 ### Conditions
 
@@ -296,13 +342,18 @@ Barikoi::searchPlace(string $query, array $options = [])
 
 ```php
 try {
-    // Basic search
+    // Basic search (returns stdClass object)
     $results = Barikoi::searchPlace('barikoi');
 
-    // Access results
-    foreach ($results['places'] as $place) {
-        echo $place['address'];
+    // Access results (object / stdClass)
+    foreach ($results->places as $place) {
+        $placeArray = is_object($place) ? get_object_vars($place) : (array) $place;
+        echo $placeArray['address'] . ' (' . $placeArray['place_code'] . ')' . PHP_EOL;
     }
+
+    // Access session_id and status
+    $sessionId = $results->session_id ?? null;
+    $status = $results->status;
 
 } catch (BarikoiApiException $e) {
     echo "Search failed: " . $e->getMessage();
@@ -312,19 +363,25 @@ try {
 ### Response
 
 ```php
-[
-    'places' => [
-        [
-            'id' => 'BKOI2017',
-            'address' => 'Barikoi Office, Dhaka',
-            'area' => 'Dhanmondi',
-            'city' => 'Dhaka',
-        ],
+{
+    "places": [
+        {
+            "address": "Barikoi HQ (barikoi.com), Dr Mohsin Plaza, House 2/7, Begum Rokeya Sarani, Pallabi, Mirpur, Dhaka",
+            "place_code": "BKOI2017"
+        },
+        {
+            "address": "Barikoi Global Map Office Rajshahi, Silicon Tower, Rajshahi Hi Tech Park, Zia Nagar, Bashuri, Rajshahi",
+            "place_code": "HPADN93670"
+        }
         // ... more results
     ],
-    'status' => 200
-]
+    "session_id": "df365f41-602d-4211-94b9-46242947f3a0",
+    "status": 200
+}
 ```
+
+> **Note:** In PHP, `Barikoi::searchPlace()` returns a `stdClass` object that mirrors this JSON shape.  
+> Access fields using `->` (for example, `$results->places`, `$results->status`, `$results->session_id`).
 
 ### Error Handling
 
@@ -361,10 +418,17 @@ Barikoi::nearby(float $longitude, float $latitude, float $distance = 0.5, int $l
 ```php
 try {
     // Find places within 0.5km (default), max 10 results (default)
+    // Returns stdClass object with "places" array
     $nearby = Barikoi::nearby(90.38305163, 23.87188719);
 
     // Find places within 1km, max 20 results
     $nearby = Barikoi::nearby(90.38305163, 23.87188719, 1.0, 20);
+
+    // Access results (object / stdClass)
+    foreach ($nearby->places as $place) {
+        // API uses "Address" (capital A) and "distance_in_meters"
+        echo $place['Address'] . ' (' . $place['distance_in_meters'] . 'm)' . PHP_EOL;
+    }
 
 } catch (BarikoiValidationException $e) {
     echo "Invalid parameters: " . $e->getMessage();
@@ -399,11 +463,13 @@ Barikoi::snapToRoad(float $latitude, float $longitude)
 ```php
 try {
     // Snap single point to nearest road
+    // Returns stdClass object with coordinates [lon, lat]
     $snapped = Barikoi::snapToRoad(23.806525320635505, 90.36129978225671);
 
-    // Access results
-    $coordinates = $snapped['coordinates'] ?? null;
-    $distance = $snapped['distance'] ?? null;
+    // Access results (object / stdClass)
+    $coordinates = $snapped->coordinates ?? null;   // [lon, lat]
+    $distance = $snapped->distance ?? null;         // meters
+    $type = $snapped->type ?? null;                 // e.g. "Point"
 
 } catch (BarikoiValidationException $e) {
     echo "Invalid coordinates: " . $e->getMessage();
@@ -413,15 +479,15 @@ try {
 ### Response
 
 ```php
-[
-    'coordinates' => [
-        'latitude' => 23.8065,
-        'longitude' => 90.3612
-    ],
-    'distance' => 5.2,  // Distance in meters
-    'type' => 'road'
-]
+{
+    "coordinates": [90.36124781587853, 23.80659275779645],
+    "distance": 9.174944594219724,
+    "type": "Point"
+}
 ```
+
+> **Note:** In PHP, `Barikoi::snapToRoad()` returns a `stdClass` object that mirrors this JSON shape.  
+> Access fields using `->` (for example, `$snapped->coordinates`, `$snapped->distance`, `$snapped->type`).
 
 ### Conditions
 

@@ -29,7 +29,7 @@ class BarikoiClientTest extends TestCase
             return $request->url() === 'https://barikoi.xyz/v2/api/test?param1=value1&api_key=test-api-key';
         });
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test POST request adds API key
@@ -46,7 +46,7 @@ class BarikoiClientTest extends TestCase
                 && $request->hasHeader('Content-Type', 'application/x-www-form-urlencoded');
         });
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test DELETE request adds API key
@@ -64,10 +64,10 @@ class BarikoiClientTest extends TestCase
                 && str_contains($url, '/test/123');
         });
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
-    // Test client returns JSON response
+    // Test client returns JSON response as object
     public function test_client_returns_json_response()
     {
         Http::fake([
@@ -76,10 +76,10 @@ class BarikoiClientTest extends TestCase
 
         $result = $this->client->get('/test');
 
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('status', $result);
-        $this->assertArrayHasKey('place', $result);
-        $this->assertEquals('Dhanmondi', $result['place']['name']);
+        $this->assertIsObject($result);
+        $this->assertObjectHasProperty('status', $result);
+        $this->assertObjectHasProperty('place', $result);
+        $this->assertEquals('Dhanmondi', $result->place->name);
     }
 
     // Test client uses config when no API key provided
@@ -111,7 +111,7 @@ class BarikoiClientTest extends TestCase
 
         $result = $this->client->get('/test');
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
         Http::assertSent(function ($request) {
             return str_contains($request->url(), 'api_key=test-api-key');
         });
@@ -126,7 +126,7 @@ class BarikoiClientTest extends TestCase
 
         $result = $this->client->post('/test');
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
         Http::assertSent(function ($request) {
             return str_contains($request->url(), '/test');
         });

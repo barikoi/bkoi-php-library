@@ -2,7 +2,6 @@
 
 namespace Vendor\BarikoiApi;
 
-use Vendor\BarikoiApi\Services\AdministrativeService;
 use Vendor\BarikoiApi\Services\GeofenceService;
 use Vendor\BarikoiApi\Services\LocationService;
 use Vendor\BarikoiApi\Services\RouteService;
@@ -15,7 +14,6 @@ class Barikoi
     protected BarikoiClient $client;
     protected ?LocationService $locationService = null;
     protected ?RouteService $routeService = null;
-    protected ?AdministrativeService $administrativeService = null;
     protected ?GeofenceService $geofenceService = null;
 
     public function __construct(?string $apiKey = null, ?string $baseUrl = null)
@@ -41,15 +39,6 @@ class Barikoi
         return $this->routeService;
     }
 
-    // Get administrative service (divisions, districts, thanas)
-    public function administrative(): AdministrativeService
-    {
-        if (!$this->administrativeService) {
-            $this->administrativeService = new AdministrativeService($this->client);
-        }
-        return $this->administrativeService;
-    }
-
     // Get geofence service (boundaries, zones)
     public function geofence(): GeofenceService
     {
@@ -64,25 +53,29 @@ class Barikoi
     // ============================================================================
 
     // Convert coordinates to address
-    public function reverseGeocode(float $longitude, float $latitude, array $options = []): array
+    // Returns object (stdClass) matching Barikoi API response format
+    public function reverseGeocode(float $longitude, float $latitude, array $options = []): object
     {
         return $this->location()->reverseGeocode($longitude, $latitude, $options);
     }
 
     // Get place suggestions as user types
-    public function autocomplete(string $query, array $options = []): array
+    // Returns object (stdClass) matching Barikoi autocomplete response format
+    public function autocomplete(string $query, array $options = []): object
     {
         return $this->location()->autocomplete($query, $options);
     }
 
     // Search for places by query
-    public function searchPlace(string $query, array $options = []): array
+    // Returns object (stdClass) matching Barikoi search-place API response format
+    public function searchPlace(string $query, array $options = []): object
     {
         return $this->location()->searchPlace($query, $options);
     }
 
-    // Convert address to coordinates
-    public function geocode(string $address, array $options = []): array
+    // Convert address to coordinates (Rupantor)
+    // Returns object (stdClass) matching Barikoi API response format
+    public function geocode(string $address, array $options = []): object
     {
         return $this->location()->geocode($address, $options);
     }
@@ -101,14 +94,14 @@ class Barikoi
     }
 
     // Snap GPS coordinates to nearest road
-    public function snapToRoad(float $latitude, float $longitude): array
+    public function snapToRoad(float $latitude, float $longitude): object
     {
         return $this->location()->snapToRoad($latitude, $longitude);
     }
 
     // Find places within radius
     // Distance in kilometers (e.g., 0.5 = 500 meters), limit is max results
-    public function nearby(float $longitude, float $latitude, float $distance = 0.5, int $limit = 10, array $options = []): array
+    public function nearby(float $longitude, float $latitude, float $distance = 0.5, int $limit = 10, array $options = []): object
     {
         return $this->location()->nearby($longitude, $latitude, $distance, $limit, $options);
     }
@@ -146,26 +139,29 @@ class Barikoi
     // ============================================================================
 
     // Simple route overview between multiple points
-    public function routeOverview(array $points, array $options = []): array
+    // Returns object (stdClass) matching Barikoi route API response format
+    public function routeOverview(array $points, array $options = []): object
     {
         return $this->route()->routeOverview($points, $options);
     }
 
     // Calculate detailed route between points (turn-by-turn style response)
-    public function calculateRoute(array $points, array $options = []): array
+    // Returns object (stdClass) matching Barikoi route API response format
+    public function calculateRoute(array $points, array $options = []): object
     {
         return $this->route()->detailed($points, $options);
     }
 
     // Calculate detailed navigation route (separate routing API)
+    // Calculate detailed navigation route (separate routing API, returns stdClass with \"trip\")
     public function detailedNavigation(
         float $startLatitude,
         float $startLongitude,
         float $destinationLatitude,
         float $destinationLongitude,
         array $options = []
-    ): array {
-        return $this->route()->detailedNavigation(
+    ): object {
+        return $this->route()->calculateRoute(
             $startLatitude,
             $startLongitude,
             $destinationLatitude,

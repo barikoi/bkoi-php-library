@@ -32,11 +32,31 @@ class BarikoiClient
 
     /**
      * Handle API response and throw appropriate exceptions for errors
+     * Returns object (stdClass) if Barikoi API returns object, array if Barikoi returns array
      */
-    protected function handleResponse(Response $response): array
+    protected function handleResponse(Response $response): array|object
     {
         if ($response->successful()) {
-            return $response->json() ?? [];
+            $json = $response->json();
+            if ($json === null) {
+                return [];
+            }
+            
+            // Check if the JSON response is an object structure (associative array with non-numeric keys)
+            // If it's an object structure, return as object (stdClass) to match Barikoi API format
+            if (is_array($json) && !empty($json)) {
+                // Check if it's an associative array (object-like structure)
+                $keys = array_keys($json);
+                $isAssociative = array_keys($keys) !== $keys; // Keys are not 0,1,2... means it's associative
+                
+                if ($isAssociative) {
+                    // Convert to object (stdClass) to match Barikoi API response format
+                    return json_decode(json_encode($json), false);
+                }
+            }
+            
+            // Return as array if it's a numeric array (list)
+            return $json;
         }
 
         // Handle validation errors (400 Bad Request)
@@ -49,7 +69,7 @@ class BarikoiClient
     }
 
     // GET request - for fetching data
-    public function get(string $endpoint, array $params = []): array
+    public function get(string $endpoint, array $params = []): array|object
     {
         $params['api_key'] = $this->apiKey;
         $response = $this->client()->get($endpoint, $params);
@@ -58,7 +78,7 @@ class BarikoiClient
     }
 
     // POST request - for sending data (form-encoded)
-    public function post(string $endpoint, array $data = []): array
+    public function post(string $endpoint, array $data = []): array|object
     {
         $data['api_key'] = $this->apiKey;
         $response = $this->client()->asForm()->post($endpoint, $data);
@@ -67,7 +87,7 @@ class BarikoiClient
     }
 
     // POST request with JSON body (api_key in query string)
-    public function postJson(string $endpoint, array $data = []): array
+    public function postJson(string $endpoint, array $data = []): array|object
     {
         // api_key is in query string for JSON endpoints like /routing
         $separator = str_contains($endpoint, '?') ? '&' : '?';
@@ -78,7 +98,7 @@ class BarikoiClient
     }
 
     // POST request with JSON body (api_key in body)
-    public function postJsonWithKeyInBody(string $endpoint, array $data = []): array
+    public function postJsonWithKeyInBody(string $endpoint, array $data = []): array|object
     {
         // api_key is in the JSON body for endpoints like /route/optimized
         $data['api_key'] = $this->apiKey;
@@ -88,7 +108,7 @@ class BarikoiClient
     }
 
     // DELETE request - for removing data
-    public function delete(string $endpoint, array $params = []): array
+    public function delete(string $endpoint, array $params = []): array|object
     {
         $params['api_key'] = $this->apiKey;
         $response = $this->client()->delete($endpoint, $params);

@@ -62,7 +62,7 @@ $options = [
 ];
 $reverse = Barikoi::reverseGeocode(90.3572, 23.8067, $options);
 
-// 2. Detailed route between two points
+// 2. Detailed route between two points (returns stdClass object)
 $route = Barikoi::calculateRoute([
     ['longitude' => 90.3572, 'latitude' => 23.8067],
     ['longitude' => 90.3680, 'latitude' => 23.8100],
@@ -71,7 +71,7 @@ $route = Barikoi::calculateRoute([
     'geometries' => 'polyline6',
 ]);
 
-// 3. Simple route overview
+// 3. Simple route overview (returns stdClass object)
 $overview = Barikoi::routeOverview([
     ['longitude' => 90.3572, 'latitude' => 23.8067],
     ['longitude' => 90.3680, 'latitude' => 23.8100],
@@ -80,8 +80,12 @@ $overview = Barikoi::routeOverview([
     'geometries' => 'polyline',
 ]);
 
-// 4. Geocode (Rupantor)
-$geocoded = Barikoi::geocode('D');
+// 4. Geocode (Rupantor) - returns stdClass (object)
+$geocoded = Barikoi::geocode('shawrapara', [
+    'thana' => true,
+    'district' => true,
+    'bangla' => true,
+]);
 
 // 5. Nearby search
 $nearby = Barikoi::nearby(90.38305163, 23.87188719, 0.5, 2);
@@ -124,7 +128,7 @@ Complete documentation with parameters, conditions, and error handling for each 
 ```php
 use Vendor\PackageName\Facades\Barikoi;
 
-$address = Barikoi::reverseGeocode(90.3572, 23.8067);
+$address = Barikoi::reverseGeocode(90.3572, 23.8067); // returns stdClass (object)
 $places = Barikoi::autocomplete('restaurant');
 ```
 
@@ -223,8 +227,8 @@ public function getAddress(Request $request)
         );
 
         return response()->json([
-            'address' => $result['place']['address'],
-            'district' => $result['place']['district'],
+            'address' => $result->place->address,
+            'district' => $result->place->district,
         ]);
     } catch (BarikoiApiException $e) {
         return response()->json(['error' => $e->getMessage()], $e->getCode());

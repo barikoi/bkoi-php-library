@@ -75,10 +75,9 @@ class ErrorHandlingTest extends TestCase
             '*' => Http::response([], 200)
         ]);
 
-        $result = $this->service->reverseGeocode(90.3572, 23.8067);
-
-        $this->assertIsArray($result);
-        $this->assertEmpty($result);
+        // Empty array response violates service's object return type
+        $this->expectException(\TypeError::class);
+        $this->service->reverseGeocode(90.3572, 23.8067);
     }
 
     // Test handling null response
@@ -88,11 +87,9 @@ class ErrorHandlingTest extends TestCase
             '*' => Http::response(null, 200)
         ]);
 
-        $result = $this->service->reverseGeocode(90.3572, 23.8067);
-
-        // Client returns empty array for null JSON (with ?? [] fallback)
-        $this->assertIsArray($result);
-        $this->assertEmpty($result);
+        // Null response causes client to return empty array, which violates service's object return type
+        $this->expectException(\TypeError::class);
+        $this->service->reverseGeocode(90.3572, 23.8067);
     }
 
     // Test handling malformed JSON
@@ -102,11 +99,9 @@ class ErrorHandlingTest extends TestCase
             '*' => Http::response('invalid json {]', 200, ['Content-Type' => 'text/plain'])
         ]);
 
-        $result = $this->service->reverseGeocode(90.3572, 23.8067);
-
-        // Client returns empty array for invalid JSON (with ?? [] fallback)
-        $this->assertIsArray($result);
-        $this->assertEmpty($result);
+        // Malformed JSON causes client to return empty array, which violates service's object return type
+        $this->expectException(\TypeError::class);
+        $this->service->reverseGeocode(90.3572, 23.8067);
     }
 
     // Test handling timeout (this would need actual timeout simulation)
@@ -144,9 +139,9 @@ class ErrorHandlingTest extends TestCase
 
         $result = $this->service->searchPlace('nonexistent place xyz123');
 
-        $this->assertIsArray($result);
-        $this->assertEquals(200, $result['status']);
-        $this->assertEmpty($result['places']);
+        $this->assertIsObject($result);
+        $this->assertEquals(200, $result->status);
+        $this->assertEmpty($result->places);
     }
 
     // Test handling partial response data
@@ -164,9 +159,9 @@ class ErrorHandlingTest extends TestCase
 
         $result = $this->service->reverseGeocode(90.3572, 23.8067);
 
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('place', $result);
-        $this->assertArrayHasKey('address', $result['place']);
+        $this->assertIsObject($result);
+        $this->assertObjectHasProperty('place', $result);
+        $this->assertObjectHasProperty('address', $result->place);
     }
 
     // Test handling missing required fields in response
@@ -181,8 +176,8 @@ class ErrorHandlingTest extends TestCase
 
         $result = $this->service->autocomplete('test');
 
-        $this->assertIsArray($result);
-        $this->assertArrayNotHasKey('status', $result);
+        $this->assertIsObject($result);
+        $this->assertObjectNotHasProperty('status', $result);
     }
 
     // Test geocode with invalid address returns error
@@ -212,8 +207,8 @@ class ErrorHandlingTest extends TestCase
 
         $result = $this->service->reverseGeocode(90.3572, 23.8067);
 
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('completely', $result);
+        $this->assertIsObject($result);
+        $this->assertObjectHasProperty('completely', $result);
     }
 
     // Test success response with warnings
@@ -229,8 +224,8 @@ class ErrorHandlingTest extends TestCase
 
         $result = $this->service->reverseGeocode(90.3572, 23.8067);
 
-        $this->assertIsArray($result);
-        $this->assertEquals(200, $result['status']);
-        $this->assertArrayHasKey('warnings', $result);
+        $this->assertIsObject($result);
+        $this->assertEquals(200, $result->status);
+        $this->assertObjectHasProperty('warnings', $result);
     }
 }

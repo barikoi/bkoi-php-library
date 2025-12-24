@@ -26,7 +26,7 @@
         <env name="QUEUE_CONNECTION" value="sync"/>
 
         <!-- Discord Notifications -->
-        <env name="DISCORD_WEBHOOK_URL" value="https://discord.com/api/webhooks/1452931932814835712/1NsW4Sbf30E24IQCPIxaT_zQrI_UUWLm3C8k7g17vEyJ00vgpYMW_MCGsvmj4oG3tPP6"/>
+        <env name="DISCORD_WEBHOOK_URL" value="https://discord.com/api/webhooks/1417786953293762680/62kZY0VXRjs7bUrrpohivNqEV0FaBlI0vl7dDQVUBkvJ0vJcu7rwq2U0A2mgQ1v-1Ko4"/>
         <env name="DISCORD_NOTIFICATIONS_ENABLED" value="true"/>
     </php>
 

@@ -24,7 +24,7 @@ class FacadeTest extends TestCase
 
         $result = Barikoi::reverseGeocode(90.3572, 23.8067);
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test facade autocomplete method
@@ -34,7 +34,7 @@ class FacadeTest extends TestCase
 
         $result = Barikoi::autocomplete('Dhanmondi');
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test facade geocode method
@@ -44,7 +44,7 @@ class FacadeTest extends TestCase
 
         $result = Barikoi::geocode('Dhanmondi, Dhaka');
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test facade search place method
@@ -54,7 +54,7 @@ class FacadeTest extends TestCase
 
         $result = Barikoi::searchPlace('restaurant');
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test facade snap to road method
@@ -65,7 +65,7 @@ class FacadeTest extends TestCase
 
         $result = Barikoi::snapToRoad(23.8067, 90.3572);
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test facade nearby method
@@ -76,7 +76,7 @@ class FacadeTest extends TestCase
 
         $result = Barikoi::nearby(90.3572, 23.8067, 1.0, 10);
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test facade with chained location() call
@@ -86,7 +86,7 @@ class FacadeTest extends TestCase
 
         $result = Barikoi::location()->reverseGeocode(90.3572, 23.8067);
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test facade returns same service instance
@@ -110,9 +110,9 @@ class FacadeTest extends TestCase
         $result2 = Barikoi::autocomplete('Dhaka');
         $result3 = Barikoi::searchPlace('hospital');
 
-        $this->assertIsArray($result1);
-        $this->assertIsArray($result2);
-        $this->assertIsArray($result3);
+        $this->assertIsObject($result1);
+        $this->assertIsObject($result2);
+        $this->assertIsObject($result3);
     }
 
     // Test facade with options
@@ -125,7 +125,7 @@ class FacadeTest extends TestCase
             'bangla' => true,
         ]);
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
         Http::assertSent(function ($request) {
             return str_contains($request->url(), 'district=true')
                 && str_contains($request->url(), 'bangla=true');

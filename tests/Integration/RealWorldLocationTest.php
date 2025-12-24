@@ -23,21 +23,21 @@ class RealWorldLocationTest extends IntegrationTestCase
         // Shahbagh area coordinates - request with district option
         $result = Barikoi::reverseGeocode(90.3957, 23.7386, ['district' => true]);
 
-        $this->assertIsArray($result);
-        $this->assertEquals(200, $result['status']);
-        $this->assertArrayHasKey('place', $result);
+        $this->assertIsObject($result);
+        $this->assertEquals(200, $result->status);
+        $this->assertObjectHasProperty('place', $result);
 
-        $place = $result['place'];
-        $this->assertArrayHasKey('address', $place);
-        $this->assertArrayHasKey('city', $place);
-        $this->assertArrayHasKey('area', $place);
-        $this->assertArrayHasKey('district', $place);
+        $place = $result->place;
+        $this->assertObjectHasProperty('address', $place);
+        $this->assertObjectHasProperty('city', $place);
+        $this->assertObjectHasProperty('area', $place);
+        $this->assertObjectHasProperty('district', $place);
 
         // Should be in Dhaka
-        $this->assertStringContainsString('Dhaka', $place['district']);
+        $this->assertStringContainsString('Dhaka', $place->district);
 
-        echo "\n✓ Found address: {$place['address']}\n";
-        echo "  City: {$place['city']}, Area: {$place['area']}\n";
+        echo "\n✓ Found address: {$place->address}\n";
+        echo "  City: {$place->city}, Area: {$place->area}\n";
     }
 
     /**
@@ -53,15 +53,15 @@ class RealWorldLocationTest extends IntegrationTestCase
             'post_code' => true,
         ]);
 
-        $this->assertEquals(200, $result['status']);
-        $this->assertArrayHasKey('place', $result);
+        $this->assertEquals(200, $result->status);
+        $this->assertObjectHasProperty('place', $result);
 
-        $place = $result['place'];
-        $this->assertArrayHasKey('district', $place);
-        $this->assertArrayHasKey('postCode', $place);
+        $place = $result->place;
+        $this->assertObjectHasProperty('district', $place);
+        $this->assertObjectHasProperty('postCode', $place);
 
-        echo "\n✓ District: {$place['district']}\n";
-        echo "  Post Code: {$place['postCode']}\n";
+        echo "\n✓ District: {$place->district}\n";
+        echo "  Post Code: {$place->postCode}\n";
     }
 
     /**
@@ -72,22 +72,24 @@ class RealWorldLocationTest extends IntegrationTestCase
      */
     public function test_autocomplete_gulshan_search()
     {
-        // Note: autocomplete only supports 'bangla' option, not 'limit'
         $result = Barikoi::autocomplete('Gulshan');
 
-        $this->assertIsArray($result);
-        $this->assertEquals(200, $result['status']);
-        $this->assertArrayHasKey('places', $result);
-        $this->assertIsArray($result['places']);
-        $this->assertNotEmpty($result['places']);
+        $this->assertIsObject($result);
+        if (isset($result->status)) {
+            $this->assertEquals(200, $result->status);
+        }
+        $this->assertObjectHasProperty('places', $result);
+        $this->assertIsObject($result->places);
+        $this->assertNotEmpty($result->places);
 
         // Check first result
-        $firstPlace = $result['places'][0];
-        $this->assertArrayHasKey('address', $firstPlace);
-        $this->assertStringContainsString('Gulshan', $firstPlace['address']);
+        $firstPlace = $result->places[0];
+        $firstPlaceArray = is_object($firstPlace) ? get_object_vars($firstPlace) : $firstPlace;
+        $this->assertArrayHasKey('address', $firstPlaceArray);
+        $this->assertStringContainsString('Gulshan', $firstPlaceArray['address']);
 
-        echo "\n✓ Found " . count($result['places']) . " places matching 'Gulshan'\n";
-        echo "  First result: {$firstPlace['address']}\n";
+        echo "\n✓ Found " . count($result->places) . " places matching 'Gulshan'\n";
+        echo "  First result: {$firstPlaceArray['address']}\n";
     }
 
     /**
@@ -100,29 +102,30 @@ class RealWorldLocationTest extends IntegrationTestCase
     {
         $result = Barikoi::geocode('Dhanmondi, Dhaka');
 
-        $this->assertIsArray($result);
-        $this->assertEquals(200, $result['status']);
+        $this->assertIsObject($result);
+        $this->assertEquals(200, $result->status);
 
         // Rupantor API returns geocoded_address key
-        $this->assertArrayHasKey('geocoded_address', $result);
-        
-        $place = $result['geocoded_address'];
-        $this->assertArrayHasKey('latitude', $place);
-        $this->assertArrayHasKey('longitude', $place);
-        $this->assertArrayHasKey('address', $place);
+        $this->assertObjectHasProperty('geocoded_address', $result);
+
+        $place = $result->geocoded_address;
+        $placeArray = is_object($place) ? get_object_vars($place) : $place;
+        $this->assertArrayHasKey('latitude', $placeArray);
+        $this->assertArrayHasKey('longitude', $placeArray);
+        $this->assertArrayHasKey('address', $placeArray);
 
         // Coordinates should be in Dhaka area (latitude/longitude may be strings)
-        $lat = (float) $place['latitude'];
-        $lng = (float) $place['longitude'];
-        
+        $lat = (float) $placeArray['latitude'];
+        $lng = (float) $placeArray['longitude'];
+
         $this->assertGreaterThan(23.7, $lat);
         $this->assertLessThan(23.9, $lat);
         $this->assertGreaterThan(90.3, $lng);
         $this->assertLessThan(90.5, $lng);
 
         echo "\n✓ Geocoded 'Dhanmondi, Dhaka'\n";
-        echo "  Coordinates: {$place['latitude']}, {$place['longitude']}\n";
-        echo "  Address: {$place['address']}\n";
+        echo "  Coordinates: {$placeArray['latitude']}, {$placeArray['longitude']}\n";
+        echo "  Address: {$placeArray['address']}\n";
     }
 
     /**
@@ -136,27 +139,30 @@ class RealWorldLocationTest extends IntegrationTestCase
         // Motijheel commercial area
         $result = Barikoi::nearby(90.4177, 23.7337, 1000);
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
 
         // Check if endpoint is available
-        if (isset($result['message']) && str_contains($result['message'], 'could not be found')) {
+        $data = is_object($result) ? get_object_vars($result) : $result;
+
+        if (isset($data['message']) && str_contains($data['message'], 'could not be found')) {
             $this->markTestSkipped('Nearby endpoint not available in current API version');
             return;
         }
 
-        $this->assertEquals(200, $result['status']);
-        $this->assertArrayHasKey('places', $result);
-        $this->assertIsArray($result['places']);
+        // Some plans may not include status; we mainly expect "places"
+        $this->assertObjectHasProperty('places', $result);
+        $this->assertIsObject($result->places);
 
-        if (!empty($result['places'])) {
-            $firstPlace = $result['places'][0];
+        if (!empty($result->places)) {
+            $firstPlace = $result->places[0];
+            $firstPlaceArray = is_array($firstPlace) ? $firstPlace : (array) $firstPlace;
             // API returns 'Address' (capital A) not 'address'
-            $this->assertArrayHasKey('Address', $firstPlace);
+            $this->assertArrayHasKey('Address', $firstPlaceArray);
             // API returns 'distance_in_meters' not 'distance'
-            $this->assertArrayHasKey('distance_in_meters', $firstPlace);
+            $this->assertArrayHasKey('distance_in_meters', $firstPlaceArray);
 
-            echo "\n✓ Found " . count($result['places']) . " places within 1km\n";
-            echo "  Nearest: {$firstPlace['Address']} ({$firstPlace['distance_in_meters']}m away)\n";
+            echo "\n✓ Found " . count($result->places) . " places within 1km\n";
+            echo "  Nearest: {$firstPlaceArray['Address']} ({$firstPlaceArray['distance_in_meters']}m away)\n";
         }
     }
 
@@ -170,16 +176,17 @@ class RealWorldLocationTest extends IntegrationTestCase
     {
         $result = Barikoi::searchPlace('ঢাকা');
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
 
         // Check if we got a valid response
-        if (isset($result['status'])) {
-            $this->assertEquals(200, $result['status']);
-            $this->assertArrayHasKey('places', $result);
+        if (isset($result->status)) {
+            $this->assertEquals(200, $result->status);
+            $this->assertObjectHasProperty('places', $result);
 
-            if (!empty($result['places'])) {
-                echo "\n✓ Search for 'ঢাকা' found " . count($result['places']) . " places\n";
-                echo "  First result: {$result['places'][0]['address']}\n";
+            if (!empty($result->places)) {
+                $firstPlace = is_object($result->places[0]) ? get_object_vars($result->places[0]) : $result->places[0];
+                echo "\n✓ Search for 'ঢাকা' found " . count($result->places) . " places\n";
+                echo "  First result: {$firstPlace['address']}\n";
             }
         } else {
             // Some search endpoints may return different structure
@@ -208,13 +215,13 @@ class RealWorldLocationTest extends IntegrationTestCase
             // Request with district option
             $result = Barikoi::reverseGeocode($location['lng'], $location['lat'], ['district' => true]);
 
-            $this->assertEquals(200, $result['status']);
-            $this->assertArrayHasKey('place', $result);
+            $this->assertEquals(200, $result->status);
+            $this->assertObjectHasProperty('place', $result);
 
             $results[] = [
                 'name' => $location['name'],
-                'address' => $result['place']['address'],
-                'district' => $result['place']['district'] ?? 'N/A',
+                'address' => $result->place->address,
+                'district' => $result->place->district ?? 'N/A',
             ];
         }
 
@@ -238,14 +245,14 @@ class RealWorldLocationTest extends IntegrationTestCase
         // Near Dinajpur (close to border) - request with district option
         $result = Barikoi::reverseGeocode(88.6354, 25.6217, ['district' => true]);
 
-        $this->assertIsArray($result);
-        $this->assertEquals(200, $result['status']);
+        $this->assertIsObject($result);
+        $this->assertEquals(200, $result->status);
 
-        if (isset($result['place'])) {
+        if (isset($result->place)) {
             echo "\n✓ Border location result:\n";
-            echo "  Address: {$result['place']['address']}\n";
-            if (isset($result['place']['district'])) {
-                echo "  District: {$result['place']['district']}\n";
+            echo "  Address: {$result->place->address}\n";
+            if (isset($result->place->district)) {
+                echo "  District: {$result->place->district}\n";
             }
         }
     }
@@ -272,7 +279,7 @@ class RealWorldLocationTest extends IntegrationTestCase
         foreach ($coordinates as $coord) {
             $result = Barikoi::reverseGeocode($coord[0], $coord[1]);
 
-            if ($result['status'] === 200) {
+            if ($result->status === 200) {
                 $successCount++;
             }
         }

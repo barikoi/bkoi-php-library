@@ -96,7 +96,7 @@ class LocationServiceTest extends TestCase
         Http::assertSent(function ($request) {
             $url = $request->url();
             return str_contains($url, 'q=Dhanmondi')
-                && str_contains($url, 'bangla=1');
+                && str_contains($url, 'bangla=true');
         });
     }
 
@@ -120,21 +120,32 @@ class LocationServiceTest extends TestCase
         $this->service->reverseGeocode(181.0, 91.0);
     }
 
-    // Test geocode throws validation exception when options are provided
-    public function test_geocode_throws_for_unsupported_options()
+    // Test geocode accepts options and converts booleans to strings
+    public function test_geocode_converts_boolean_options_to_string()
     {
-        $this->expectException(\Vendor\BarikoiApi\Exceptions\BarikoiValidationException::class);
+        Http::fake([
+            '*' => Http::response(['status' => 200, 'geocoded_address' => []], 200)
+        ]);
 
         $this->service->geocode('shawrapara', [
             'thana' => true,
+            'district' => true,
+            'bangla' => false,
         ]);
+
+        Http::assertSent(function ($request) {
+            $body = urldecode($request->body());
+            return str_contains($body, 'thana=true')
+                && str_contains($body, 'district=true')
+                && str_contains($body, 'bangla=false');
+        });
     }
 
     // Test geocode uses POST method
     public function test_geocode_uses_post_method()
     {
         Http::fake([
-            '*' => Http::response(['status' => 200, 'place' => []], 200)
+            '*' => Http::response(['status' => 200, 'geocoded_address' => []], 200)
         ]);
 
         $this->service->geocode('Dhanmondi 27, Dhaka');
@@ -144,6 +155,18 @@ class LocationServiceTest extends TestCase
                 && str_contains($request->url(), '/search/rupantor/geocode')
                 && str_contains(urldecode($request->body()), 'q=Dhanmondi 27, Dhaka');
         });
+    }
+
+    // Test geocode returns object
+    public function test_geocode_returns_object()
+    {
+        Http::fake([
+            '*' => Http::response(['status' => 200, 'geocoded_address' => []], 200)
+        ]);
+
+        $result = $this->service->geocode('Dhanmondi 27, Dhaka');
+
+        $this->assertIsObject($result);
     }
 
     // Test search place sends query
