@@ -69,6 +69,9 @@ jobs:
           LARAVEL_VERSION: ${{ matrix.laravel }}
           TESTBENCH_VERSION: ${{ matrix.testbench }}
           DEPENDENCY_VERSION: ${{ matrix.dependency-version }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_NOTIFICATIONS_ENABLED: true
+          CI: true
         run: |
           vendor/bin/phpunit --testsuite Unit
           vendor/bin/phpunit --testsuite Feature
@@ -79,6 +82,9 @@ jobs:
           LARAVEL_VERSION: ${{ matrix.laravel }}
           TESTBENCH_VERSION: ${{ matrix.testbench }}
           DEPENDENCY_VERSION: ${{ matrix.dependency-version }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_NOTIFICATIONS_ENABLED: true
+          CI: true
         run: vendor/bin/phpunit --testsuite Integration
         continue-on-error: true
 
@@ -88,6 +94,9 @@ jobs:
           LARAVEL_VERSION: ${{ matrix.laravel }}
           TESTBENCH_VERSION: ${{ matrix.testbench }}
           DEPENDENCY_VERSION: ${{ matrix.dependency-version }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_NOTIFICATIONS_ENABLED: true
+          CI: true
         run: vendor/bin/phpunit --coverage-text --coverage-clover=coverage.xml
 
   code-quality:

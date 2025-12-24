@@ -15,6 +15,27 @@ class TestCase extends Orchestra
      */
     public static $latestResponse;
 
+    /**
+     * Track if .env file has been loaded
+     *
+     * @var bool
+     */
+    protected static $envLoaded = false;
+
+    public static function setUpBeforeClass(): void
+    {
+        parent::setUpBeforeClass();
+
+        // Load .env file for local testing (if not already loaded and file exists)
+        if (!static::$envLoaded && file_exists(__DIR__ . '/../.env')) {
+            if (class_exists(\Dotenv\Dotenv::class)) {
+                $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+                $dotenv->safeLoad(); // safeLoad won't override existing env vars
+                static::$envLoaded = true;
+            }
+        }
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
