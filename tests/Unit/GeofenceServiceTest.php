@@ -21,11 +21,13 @@ class GeofenceServiceTest extends TestCase
 //                'status' => 200
 //            ], 200)
 //        ]);
+
         $result = $service->checkNearby(23.76245538673939, 90.37852866512583,  23.762412943322726, 90.37864864706823,50);
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('data', $result);
-        $this->assertArrayHasKey('message', $result);
-        $this->assertEquals(200, $result['status']);
+        $this->assertIsObject($result);
+        $this->assertObjectHasProperty('data', $result);
+        $this->assertObjectHasProperty('message', $result);
+        $this->assertEquals(200, $result->status);
+
     }
 
     public function test_geofence_check_nearby_invalid_latitude()

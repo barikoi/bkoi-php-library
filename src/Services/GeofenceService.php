@@ -47,7 +47,8 @@ class GeofenceService
      * // Returns: ['is_nearby' => true/false, 'distance' => ...]
      * ```
      */
-    public function checkNearby(float $destinationLatitude,float $destinationLongitude,float $currentLatitude,float $currentLongitude,float $radius = 50): array {
+    public function checkNearby(float $destinationLatitude,float $destinationLongitude,float $currentLatitude,float $currentLongitude,float $radius = 50): array|object
+    {
         // Validate destination coordinates
         if ($destinationLatitude < -90 || $destinationLatitude > 90 || $destinationLongitude < -180 || $destinationLongitude > 180) {
             throw new BarikoiValidationException('Invalid destination latitude or longitude');
@@ -73,7 +74,7 @@ class GeofenceService
 
         $client = new BarikoiClient(config('barikoi.api_key'), $baseUrl);
 
-        return $client->get('/v2/api/check/nearby', $params);
+        return  $client->get('/v2/api/check/nearby', $params);
     }
 
 }
