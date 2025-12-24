@@ -73,7 +73,6 @@ class BarikoiClient
     {
         $params['api_key'] = $this->apiKey;
         $response = $this->client()->get($endpoint, $params);
-
         return $this->handleResponse($response);
     }
 
