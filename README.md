@@ -72,6 +72,11 @@ $geocoded = Barikoi::geocode('shawrapara');
 // Search place by text
 $places = Barikoi::searchPlace('Dhanmondi');
 
+// Get place details by place_code - returns stdClass (object)
+$placeDetails = Barikoi::placeDetails('BKOI2017', [
+    'session_id' => '4c47157f-22d6-4689-abdf-c9f81eb43ae4'
+]);
+
 // Nearby search
 $nearby = Barikoi::nearby(90.38305163, 23.87188719, 0.5, 2);
 

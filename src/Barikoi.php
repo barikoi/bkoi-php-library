@@ -81,18 +81,18 @@ class Barikoi
         return $this->location()->geocode($address, $options);
     }
 
-    // Get place details by place_code
-    // Optional session_id can be provided in options
-    public function getPlaceDetails(string $placeCode, array $options = []): array
-    {
-        return $this->location()->getPlaceDetails($placeCode, $options);
-    }
+    // // Get place details by place_code
+    // // Optional session_id can be provided in options
+    // public function getPlaceDetails(string $placeCode, array $options = []): array
+    // {
+    //     return $this->location()->getPlaceDetails($placeCode, $options);
+    // }
 
-    // Alias for getPlaceDetails to support Barikoi::placeDetails(...)
-    public function placeDetails(string $placeCode, array $options = []): array
-    {
-        return $this->getPlaceDetails($placeCode, $options);
-    }
+    // // Alias for getPlaceDetails to support Barikoi::placeDetails(...)
+    // public function placeDetails(string $placeCode, array $options = []): array
+    // {
+    //     return $this->getPlaceDetails($placeCode, $options);
+    // }
 
     // Snap GPS coordinates to nearest road
     public function snapToRoad(float $latitude, float $longitude): object
@@ -228,5 +228,18 @@ class Barikoi
             $destinationLongitude,
             $options
         );
+    }
+
+        /**
+     * Get detailed place information using place_code (v2)
+     * Shortcut for location()->getPlaceDetails()
+     *
+     * @param string $placeCode The place_code from search results (e.g., 'BKOI2017')
+     * @param array $options Optional params like ['session_id' => '...']
+     * @return array Detailed place response
+     */
+    public function placeDetails(string $placeCode, array $options = []): object
+    {
+        return $this->location()->placeDetails($placeCode, $options);
     }
 }

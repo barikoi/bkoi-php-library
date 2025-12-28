@@ -375,6 +375,96 @@ try {
 
 ---
 
+## Place Details
+
+Get detailed information about a place using its place_code.
+
+### Method
+
+```php
+Barikoi::placeDetails(string $placeCode, array $options = [])
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `placeCode` | string | Yes | The place_code from search results (e.g., 'BKOI2017') |
+| `options` | array | No | Optional parameters (see below) |
+
+### Options
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `session_id` | string | Session ID from a previous `searchPlace()` call for better accuracy |
+
+### Usage
+
+```php
+use Vendor\PackageName\Facades\Barikoi;
+use Vendor\PackageName\Exceptions\BarikoiApiException;
+use Vendor\PackageName\Exceptions\BarikoiValidationException;
+
+try {
+    // With session_id from searchPlace() for better accuracy
+    $searchResults = Barikoi::searchPlace('barikoi');
+    $sessionId = $searchResults->session_id ?? null;
+    
+    $placeDetails = Barikoi::placeDetails('BKOI2017', [
+        'session_id' => $sessionId
+    ]);
+
+    // Access response (object / stdClass)
+    $address = $placeDetails->place->address ?? null;
+    $placeCode = $placeDetails->place->place_code ?? null;
+    $latitude = $placeDetails->place->latitude ?? null;
+    $longitude = $placeDetails->place->longitude ?? null;
+    $sessionId = $placeDetails->session_id ?? null;
+    $status = $placeDetails->status;
+
+} catch (BarikoiApiException $e) {
+    echo "API Error: " . $e->getMessage();
+} catch (BarikoiValidationException $e) {
+    echo "Validation Error: " . $e->getMessage();
+}
+```
+
+### Response
+
+```php
+{
+    "place": {
+        "address": "Barikoi HQ (barikoi.com), Dr Mohsin Plaza, House 2/7, Begum Rokeya Sarani, Pallabi, Mirpur, Dhaka",
+        "place_code": "BKOI2017",
+        "latitude": "23.823730671721",
+        "longitude": "90.36402004477634"
+    },
+    "session_id": "4c47157f-22d6-4689-abdf-c9f81eb43ae4",
+    "status": 200
+}
+```
+
+> **Note:** In PHP, `Barikoi::placeDetails()` returns a `stdClass` object that mirrors this JSON shape.  
+> Access fields using `->` (for example, `$placeDetails->place->address`, `$placeDetails->status`, `$placeDetails->session_id`).
+
+### Conditions
+
+- Place code must be valid (obtained from `searchPlace()` or `autocomplete()` results)
+- Using `session_id` from a previous `searchPlace()` call improves accuracy
+- Place code format: alphanumeric string (e.g., 'BKOI2017')
+
+### Error Handling
+
+| Error Code | Exception | Cause | Solution |
+|------------|-----------|-------|----------|
+| 400 | `BarikoiValidationException` | Invalid place code | Verify place code from search results |
+| 401 | `BarikoiApiException` | Invalid API key | Check credentials |
+| 404 | `BarikoiApiException` | Place not found | Verify place code is correct |
+
+
+
+---
+
 ## Nearby Search
 
 Find places within a specified radius.

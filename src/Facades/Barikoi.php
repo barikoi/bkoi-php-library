@@ -18,7 +18,6 @@ use Illuminate\Support\Facades\Facade;
  * @method static object autocomplete(string $query, array $options = [])
  * @method static object searchPlace(string $query, array $options = [])
  * @method static object geocode(string $address, array $options = [])
- * @method static array getPlaceDetails(string $placeCode, array $options = [])
  * @method static array placeDetails(string $placeCode, array $options = [])
  * @method static object snapToRoad(float $latitude, float $longitude)
  * @method static object nearby(float $longitude, float $latitude, float $distance = 0.5, int $limit = 10, array $options = [])

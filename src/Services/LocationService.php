@@ -188,6 +188,26 @@ class LocationService
         $client = new BarikoiClient(config('barikoi.api_key'), $baseUrl);
         return $client->get($endpoint, $params);
     }
+    /**
+     * Get detailed place information using place_code (v2)
+     *
+     * Calls the /places endpoint. Use session_id from a previous /search-place call for better accuracy.
+     *
+     * @param string $placeCode The place_code (e.g., 'BKOI2017')
+     * @param array $options Optional parameters (e.g., ['session_id' => '26aa9ba2-7a63-43dd-9fd4-fb7d53ace540'])
+     * @return array Place details response
+     */
+    public function placeDetails(string $placeCode, array $options = []): object
+    {
+        $params = array_merge([
+            'place_code' => $placeCode,
+        ], $options);
 
+        $params = array_map(function ($value) {
+            return is_bool($value) ? ($value ? 'true' : 'false') : $value;
+        }, $params);
+        
+        return $this->client->get('api/v2/places', $params);
+    }
 
 }
