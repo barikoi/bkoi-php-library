@@ -2,6 +2,7 @@
 
 namespace Vendor\BarikoiApi;
 
+use Vendor\BarikoiApi\Exceptions\BarikoiValidationException;
 use Vendor\BarikoiApi\Services\GeofenceService;
 use Vendor\BarikoiApi\Services\LocationService;
 use Vendor\BarikoiApi\Services\RouteService;
@@ -114,26 +115,6 @@ class Barikoi
         return $this->geofence()->checkNearby($destinationLatitude, $destinationLongitude, $currentLatitude, $currentLongitude, $radius);
     }
 
-    // Find places of specific category nearby
-    // Distance in kilometers (e.g., 1.0 = 1000 meters), limit is max results
-    public function nearbyWithCategory(float $longitude, float $latitude, string $category, float $distance = 1.0, int $limit = 10): array
-    {
-        return $this->location()->nearbyWithCategory($longitude, $latitude, $category, $distance, $limit);
-    }
-
-    // Find multiple types of places nearby
-    // Distance in kilometers (e.g., 5.0 = 5000 meters), limit is max results
-    public function nearbyWithTypes(float $longitude, float $latitude, array $types, float $distance = 5.0, int $limit = 5): array
-    {
-        return $this->location()->nearbyWithTypes($longitude, $latitude, $types, $distance, $limit);
-    }
-
-    // Check if point is inside polygon
-    public function pointInPolygon(float $longitude, float $latitude, array $polygon): array
-    {
-        return $this->location()->pointInPolygon($longitude, $latitude, $polygon);
-    }
-
     // ============================================================================
     // Shortcut methods - Call route methods directly
     // ============================================================================
@@ -145,11 +126,90 @@ class Barikoi
         return $this->route()->routeOverview($points, $options);
     }
 
-    // Calculate detailed route between points (turn-by-turn style response)
-    // Returns object (stdClass) matching Barikoi route API response format
-    public function calculateRoute(array $points, array $options = []): object
+    // Calculate detailed route with navigation instructions
+    // Returns object (stdClass) matching Barikoi routing API response format (with "trip" object)
+    // Accepts start/destination object format
+    public function calculateRoute(array $startDestination, array $options = []): object
     {
-        return $this->route()->detailed($points, $options);
+        // Validate and extract coordinates from start/destination pattern
+        $this->validateStartDestinationFormat($startDestination);
+        
+        $start = $startDestination['start'];
+        $destination = $startDestination['destination'];
+        
+        // Call RouteService::calculateRoute with individual coordinates
+        return $this->route()->calculateRoute(
+            $start['latitude'],
+            $start['longitude'],
+            $destination['latitude'],
+            $destination['longitude'],
+            $options
+        );
+    }
+    
+    /**
+     * Validate start/destination format for calculateRoute
+     *
+     * @param array $data Array with 'start' and 'destination' keys
+     * @throws BarikoiValidationException
+     */
+    protected function validateStartDestinationFormat(array $data): void
+    {
+        if (!isset($data['start']) || !is_array($data['start'])) {
+            throw new BarikoiValidationException(
+                'Invalid format: "start" key is required and must be an array with "longitude" and "latitude" keys.'
+            );
+        }
+        
+        if (!isset($data['destination']) || !is_array($data['destination'])) {
+            throw new BarikoiValidationException(
+                'Invalid format: "destination" key is required and must be an array with "longitude" and "latitude" keys.'
+            );
+        }
+        
+        $start = $data['start'];
+        $destination = $data['destination'];
+        
+        // Validate start coordinates
+        if (!isset($start['longitude']) || !isset($start['latitude'])) {
+            throw new BarikoiValidationException(
+                'Invalid format: "start" must contain "longitude" and "latitude" keys.'
+            );
+        }
+        
+        if (!is_numeric($start['longitude']) || !is_numeric($start['latitude'])) {
+            throw new BarikoiValidationException(
+                'Invalid coordinates: "start" longitude and latitude must be numeric.'
+            );
+        }
+        
+        // Validate destination coordinates
+        if (!isset($destination['longitude']) || !isset($destination['latitude'])) {
+            throw new BarikoiValidationException(
+                'Invalid format: "destination" must contain "longitude" and "latitude" keys.'
+            );
+        }
+        
+        if (!is_numeric($destination['longitude']) || !is_numeric($destination['latitude'])) {
+            throw new BarikoiValidationException(
+                'Invalid coordinates: "destination" longitude and latitude must be numeric.'
+            );
+        }
+        
+        // Validate coordinate ranges
+        if ($start['latitude'] < -90 || $start['latitude'] > 90 || 
+            $start['longitude'] < -180 || $start['longitude'] > 180) {
+            throw new BarikoiValidationException(
+                'Invalid coordinates: "start" latitude must be between -90 and 90, longitude between -180 and 180.'
+            );
+        }
+        
+        if ($destination['latitude'] < -90 || $destination['latitude'] > 90 || 
+            $destination['longitude'] < -180 || $destination['longitude'] > 180) {
+            throw new BarikoiValidationException(
+                'Invalid coordinates: "destination" latitude must be between -90 and 90, longitude between -180 and 180.'
+            );
+        }
     }
 
     // Calculate detailed navigation route (separate routing API)
@@ -168,17 +228,5 @@ class Barikoi
             $destinationLongitude,
             $options
         );
-    }
-
-    // Calculate optimized route with waypoints (up to 50)
-    public function optimizedRoute(string $source, string $destination, array $waypoints = [], array $options = []): array
-    {
-        return $this->route()->optimizedRoute($source, $destination, $waypoints, $options);
-    }
-
-    // Optimize route for multiple waypoints (TSP solution)
-    public function routeOptimize(array $points, array $options = []): array
-    {
-        return $this->route()->routeOptimize($points, $options);
     }
 }

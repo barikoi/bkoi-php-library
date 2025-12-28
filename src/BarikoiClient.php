@@ -26,7 +26,7 @@ class BarikoiClient
     protected function client(): PendingRequest
     {
         return Http::baseUrl($this->baseUrl)
-            ->timeout(30)
+            ->timeout(60)
             ->withHeaders(['Accept' => 'application/json']);
     }
 

@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\Facade;
  *
  * Route Methods (Direct Access):
  * @method static object routeOverview(array $points, array $options = [])
- * @method static array calculateRoute(array $points, array $options = [])
+ * @method static object calculateRoute(array $startDestination, array $options = []) Start/destination format: ['start' => ['longitude' => ..., 'latitude' => ...], 'destination' => [...]]
  * @method static object detailedNavigation(float $startLat, float $startLng, float $destLat, float $destLng, array $options = [])
  * @method static array optimizedRoute(string $source, string $destination, array $waypoints = [], array $options = [])
  * @method static array routeOptimize(array $points, array $options = [])

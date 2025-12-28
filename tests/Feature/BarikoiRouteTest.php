@@ -36,12 +36,12 @@ class BarikoiRouteTest extends TestCase
     {
         Http::fake(['*' => Http::response(['status' => 200, 'routes' => []], 200)]);
 
-        $points = [
-            ['longitude' => 90.3572, 'latitude' => 23.8067],
-            ['longitude' => 90.3680, 'latitude' => 23.8100],
+        $startDestination = [
+            'start' => ['longitude' => 90.3572, 'latitude' => 23.8067],
+            'destination' => ['longitude' => 90.3680, 'latitude' => 23.8100],
         ];
 
-        $result = Barikoi::calculateRoute($points, [
+        $result = Barikoi::calculateRoute($startDestination, [
             'alternatives' => true,
             'steps' => true,
         ]);

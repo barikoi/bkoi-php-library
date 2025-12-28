@@ -87,9 +87,9 @@ class ErrorHandlingTest extends TestCase
             '*' => Http::response(null, 200)
         ]);
 
-        // Null response causes client to return empty array, which violates service's object return type
-        $this->expectException(\TypeError::class);
-        $this->service->reverseGeocode(90.3572, 23.8067);
+        // Null response returns empty object
+        $result = $this->service->reverseGeocode(90.3572, 23.8067);
+        $this->assertIsObject($result);
     }
 
     // Test handling malformed JSON
@@ -99,9 +99,9 @@ class ErrorHandlingTest extends TestCase
             '*' => Http::response('invalid json {]', 200, ['Content-Type' => 'text/plain'])
         ]);
 
-        // Malformed JSON causes client to return empty array, which violates service's object return type
-        $this->expectException(\TypeError::class);
-        $this->service->reverseGeocode(90.3572, 23.8067);
+        // Malformed JSON returns empty object (json_decode returns null, we convert to empty object)
+        $result = $this->service->reverseGeocode(90.3572, 23.8067);
+        $this->assertIsObject($result);
     }
 
     // Test handling timeout (this would need actual timeout simulation)
