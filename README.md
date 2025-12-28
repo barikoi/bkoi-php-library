@@ -6,10 +6,8 @@ A comprehensive Laravel package for integrating [Barikoi API](https://barikoi.co
 
 ## Features
 
-- 🗺️ **Location Services**: Geocoding, Reverse Geocoding, Autocomplete, Place Search
-- 🛣️ **Routing**: Route calculation and turn-by-turn navigation
-- 🔍 **Nearby Search**: Find places within a radius
-- 🛤️ **Snap to Road**: GPS coordinate correction
+- 🗺️ **Location Services**: Geocoding, Reverse Geocoding, Autocomplete, Place Search, Place Details, Nearby Places, Check nearby location within a specified radius, Snap to Road
+- 🛣️ **Routing**: Calculate Detailed Route and Route Overview
 - ⚠️ **Error Handling**: User-friendly exceptions with actionable error messages
 
 ---
@@ -17,7 +15,7 @@ A comprehensive Laravel package for integrating [Barikoi API](https://barikoi.co
 ## Installation
 
 ```bash
-composer require barikoi/barikoi-api
+composer require barikoi/barikoi-apis
 ```
 
 ## Configuration
@@ -32,7 +30,6 @@ php artisan vendor:publish --provider="Vendor\PackageName\PackageNameServiceProv
 
 ```env
 BARIKOI_API_KEY=your_api_key_here
-BARIKOI_BASE_URL=https://barikoi.xyz/api/v2
 ```
 
 Get your API key from [Barikoi](https://barikoi.com).
@@ -62,13 +59,13 @@ $options = [
 ];
 $reverse = Barikoi::reverseGeocode(90.3572, 23.8067, $options);
 
-// 2. Detailed route between two points (returns stdClass object)
+// 2. Detailed route between two points (returns stdClass object with "trip")
 $route = Barikoi::calculateRoute([
-    ['longitude' => 90.3572, 'latitude' => 23.8067],
-    ['longitude' => 90.3680, 'latitude' => 23.8100],
+    'start' => ['longitude' => 90.36558776260725, 'latitude' => 23.791645065364126],
+    'destination' => ['longitude' => 90.3676300089066, 'latitude' => 23.784715477921843],
 ], [
-    'profile' => 'foot',
-    'geometries' => 'polyline6',
+    'type' => 'vh',           // 'vh' (motorcycle only) or 'gh' (all profiles)
+    'profile' => 'motorcycle'  // 'bike', 'motorcycle', or 'car'
 ]);
 
 // 3. Simple route overview (returns stdClass object)
@@ -81,11 +78,7 @@ $overview = Barikoi::routeOverview([
 ]);
 
 // 4. Geocode (Rupantor) - returns stdClass (object)
-$geocoded = Barikoi::geocode('shawrapara', [
-    'thana' => true,
-    'district' => true,
-    'bangla' => true,
-]);
+$geocoded = Barikoi::geocode('shawrapara');
 
 // 5. Nearby search
 $nearby = Barikoi::nearby(90.38305163, 23.87188719, 0.5, 2);
@@ -130,21 +123,6 @@ use Vendor\PackageName\Facades\Barikoi;
 
 $address = Barikoi::reverseGeocode(90.3572, 23.8067); // returns stdClass (object)
 $places = Barikoi::autocomplete('restaurant');
-```
-
-### Using Dependency Injection
-
-```php
-use Vendor\PackageName\Barikoi;
-
-class LocationController extends Controller
-{
-    public function show(Barikoi $barikoi)
-    {
-        $address = $barikoi->location()->reverseGeocode(90.3572, 23.8067);
-        return response()->json($address);
-    }
-}
 ```
 
 ---
@@ -201,10 +179,7 @@ try {
 ```php
 catch (BarikoiValidationException $e) {
     $message = $e->getMessage();              // User-friendly message
-    $apiMessage = $e->getErrorMessage();      // Original API message
     $statusCode = $e->getCode();              // HTTP status code
-    $errorData = $e->getErrorData();          // Full error response
-    $validationErrors = $e->getValidationErrors(); // Field-specific errors
 }
 ```
 
@@ -242,55 +217,19 @@ public function getAddress(Request $request)
 public function calculateRoute(Request $request)
 {
     try {
-        $origin = ['longitude' => 90.3572, 'latitude' => 23.8067];
-        $destination = ['longitude' => 90.3680, 'latitude' => 23.8100];
-
-        $route = Barikoi::calculateRoute([$origin, $destination], [
-            'steps' => true
+        $route = Barikoi::calculateRoute([
+            'start' => ['longitude' => 90.36558776260725, 'latitude' => 23.791645065364126],
+            'destination' => ['longitude' => 90.3676300089066, 'latitude' => 23.784715477921843],
+        ], [
+            'type' => 'vh',
+            'profile' => 'motorcycle'
         ]);
 
-        return response()->json([
-            'distance_km' => round($route['routes'][0]['distance'] / 1000, 2),
-            'duration_min' => round($route['routes'][0]['duration'] / 60, 1),
-            'steps' => $route['routes'][0]['legs'][0]['steps'],
-        ]);
+        return $route;
     } catch (BarikoiApiException $e) {
         return response()->json(['error' => 'Route calculation failed'], 500);
     }
 }
-```
-
-### Example 3: Check Delivery Zone
-
-```php
-public function checkDeliveryZone(Request $request)
-{
-    try {
-        $result = Barikoi::geofence()->checkGeofence(
-            $request->longitude,
-            $request->latitude
-        );
-
-        if ($result['inside_geofence']) {
-            return response()->json(['can_deliver' => true]);
-        }
-
-        return response()->json([
-            'can_deliver' => false,
-            'message' => 'Outside delivery zone'
-        ]);
-    } catch (BarikoiApiException $e) {
-        return response()->json(['error' => 'Service unavailable'], 503);
-    }
-}
-```
-
----
-
-## Testing
-
-```bash
-composer test
 ```
 
 ---

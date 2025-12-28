@@ -92,8 +92,7 @@ class RealApiWorkingTest extends IntegrationTestCase
 
         if (!empty($result->places)) {
             $first = $result->places[0];
-            $address = is_object($first) ? $first->address : $first['address'];
-            echo "  First result: {$address}\n";
+            echo "  First result: {$first->address}\n";
         }
     }
 
@@ -115,9 +114,9 @@ class RealApiWorkingTest extends IntegrationTestCase
         }
 
         if (isset($result->places) && !empty($result->places)) {
-            $firstPlace = is_object($result->places[0]) ? get_object_vars($result->places[0]) : $result->places[0];
+            $firstPlace = $result->places[0];
             echo "\n✓ Search for 'ঢাকা' returned " . count($result->places) . " results\n";
-            echo "  First result: {$firstPlace['address']}\n";
+            echo "  First result: {$firstPlace->address}\n";
         } else {
             echo "\n✓ Search for 'ঢাকা' completed (response structure may vary)\n";
         }

@@ -32,31 +32,19 @@ class BarikoiClient
 
     /**
      * Handle API response and throw appropriate exceptions for errors
-     * Returns object (stdClass) if Barikoi API returns object, array if Barikoi returns array
+     * Returns object (stdClass) matching Barikoi API response format
      */
     protected function handleResponse(Response $response): array|object
     {
         if ($response->successful()) {
             $json = $response->json();
             if ($json === null) {
-                return [];
+                return (object) [];
             }
-            
-            // Check if the JSON response is an object structure (associative array with non-numeric keys)
-            // If it's an object structure, return as object (stdClass) to match Barikoi API format
-            if (is_array($json) && !empty($json)) {
-                // Check if it's an associative array (object-like structure)
-                $keys = array_keys($json);
-                $isAssociative = array_keys($keys) !== $keys; // Keys are not 0,1,2... means it's associative
-                
-                if ($isAssociative) {
-                    // Convert to object (stdClass) to match Barikoi API response format
-                    return json_decode(json_encode($json), false);
-                }
-            }
-            
-            // Return as array if it's a numeric array (list)
-            return $json;
+
+            // Convert to object using json_decode with false flag
+            // This keeps arrays as arrays (matching Barikoi API format) while converting objects to stdClass
+            return json_decode($response->body(), false);
         }
 
         // Handle validation errors (400 Bad Request)

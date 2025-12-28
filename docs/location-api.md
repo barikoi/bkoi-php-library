@@ -109,7 +109,7 @@ try {
 
 ### Country Code Reference
 
-- Uses ISO Alpha-2 codes (default `bd`)
+- Uses ISO Alpha-2 codes (default `BD`)
 - See the country code list: [docs/country-codes.md](country-codes.md)
 - For all other countries, refer to the ISO 3166-1 Alpha-2 standard.
 
@@ -140,15 +140,6 @@ Barikoi::geocode(string $address, array $options = [])
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `address` | string | Yes | Address in Bengali or English (sent as `q` parameter) |
-| `options` | array | No | Additional options |
-
-### Options
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `thana` | boolean | false | Include thana information |
-| `district` | boolean | false | Include district information |
-| `bangla` | boolean | false | Include Bangla address |
 
 ### Usage
 
@@ -160,13 +151,6 @@ use Vendor\PackageName\Exceptions\BarikoiApiException;
 try {
     // Basic usage (returns stdClass object)
     $result = Barikoi::geocode('shawrapara');
-
-    // With all options
-    $result = Barikoi::geocode('shawrapara', [
-        'thana' => true,
-        'district' => true,
-        'bangla' => true,
-    ]);
 
     // Access response (object / stdClass)
     $coordinates = $result->geocoded_address->geo_location;
@@ -265,7 +249,7 @@ try {
     ]);
 
     foreach ($suggestions->places as $place) {
-        echo $place['address'];
+        echo $place->address;
     }
 
 } catch (BarikoiValidationException $e) {
@@ -303,7 +287,7 @@ try {
 ```
 
 > **Note:** In PHP, `Barikoi::autocomplete()` returns a `stdClass` object that mirrors this JSON shape.  
-> Access fields using `->` (for example, `$suggestions->places[0]['address']`, `$suggestions->status`).
+> Access fields using `->` (for example, `$suggestions->places[0]->address`, `$suggestions->status`).
 
 ### Conditions
 
@@ -336,7 +320,6 @@ Barikoi::searchPlace(string $query, array $options = [])
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `query` | string | Yes | Search query |
-| `options` | array | No | Additional options |
 
 ### Usage
 
@@ -347,8 +330,7 @@ try {
 
     // Access results (object / stdClass)
     foreach ($results->places as $place) {
-        $placeArray = is_object($place) ? get_object_vars($place) : (array) $place;
-        echo $placeArray['address'] . ' (' . $placeArray['place_code'] . ')' . PHP_EOL;
+        echo $place->address . ' (' . $place->place_code . ')' . PHP_EOL;
     }
 
     // Access session_id and status
@@ -400,7 +382,7 @@ Find places within a specified radius.
 ### Method
 
 ```php
-Barikoi::nearby(float $longitude, float $latitude, float $distance = 0.5, int $limit = 10, array $options = [])
+Barikoi::nearby(float $longitude, float $latitude, float $distance = 0.5, int $limit = 10)
 ```
 
 ### Parameters
@@ -411,7 +393,7 @@ Barikoi::nearby(float $longitude, float $latitude, float $distance = 0.5, int $l
 | `latitude` | float | Yes | Center latitude |
 | `distance` | float | No | Radius in kilometers (default: 0.5) |
 | `limit` | int | No | Maximum number of results (default: 10) |
-| `options` | array | No | Additional filters |
+
 
 ### Usage
 
@@ -427,7 +409,7 @@ try {
     // Access results (object / stdClass)
     foreach ($nearby->places as $place) {
         // API uses "Address" (capital A) and "distance_in_meters"
-        echo $place['Address'] . ' (' . $place['distance_in_meters'] . 'm)' . PHP_EOL;
+        echo $place->Address . ' (' . $place->distance_in_meters . 'm)' . PHP_EOL;
     }
 
 } catch (BarikoiValidationException $e) {

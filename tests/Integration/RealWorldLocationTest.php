@@ -79,17 +79,17 @@ class RealWorldLocationTest extends IntegrationTestCase
             $this->assertEquals(200, $result->status);
         }
         $this->assertObjectHasProperty('places', $result);
-        $this->assertIsObject($result->places);
+        $this->assertIsArray($result->places);
         $this->assertNotEmpty($result->places);
 
         // Check first result
         $firstPlace = $result->places[0];
-        $firstPlaceArray = is_object($firstPlace) ? get_object_vars($firstPlace) : $firstPlace;
-        $this->assertArrayHasKey('address', $firstPlaceArray);
-        $this->assertStringContainsString('Gulshan', $firstPlaceArray['address']);
+        $this->assertIsObject($firstPlace);
+        $this->assertObjectHasProperty('address', $firstPlace);
+        $this->assertStringContainsString('Gulshan', $firstPlace->address);
 
         echo "\n✓ Found " . count($result->places) . " places matching 'Gulshan'\n";
-        echo "  First result: {$firstPlaceArray['address']}\n";
+        echo "  First result: {$firstPlace->address}\n";
     }
 
     /**
@@ -151,18 +151,18 @@ class RealWorldLocationTest extends IntegrationTestCase
 
         // Some plans may not include status; we mainly expect "places"
         $this->assertObjectHasProperty('places', $result);
-        $this->assertIsObject($result->places);
+        $this->assertIsArray($result->places);
 
         if (!empty($result->places)) {
             $firstPlace = $result->places[0];
-            $firstPlaceArray = is_array($firstPlace) ? $firstPlace : (array) $firstPlace;
+            $this->assertIsObject($firstPlace);
             // API returns 'Address' (capital A) not 'address'
-            $this->assertArrayHasKey('Address', $firstPlaceArray);
+            $this->assertObjectHasProperty('Address', $firstPlace);
             // API returns 'distance_in_meters' not 'distance'
-            $this->assertArrayHasKey('distance_in_meters', $firstPlaceArray);
+            $this->assertObjectHasProperty('distance_in_meters', $firstPlace);
 
             echo "\n✓ Found " . count($result->places) . " places within 1km\n";
-            echo "  Nearest: {$firstPlaceArray['Address']} ({$firstPlaceArray['distance_in_meters']}m away)\n";
+            echo "  Nearest: {$firstPlace->Address} ({$firstPlace->distance_in_meters}m away)\n";
         }
     }
 
@@ -182,11 +182,12 @@ class RealWorldLocationTest extends IntegrationTestCase
         if (isset($result->status)) {
             $this->assertEquals(200, $result->status);
             $this->assertObjectHasProperty('places', $result);
+            $this->assertIsArray($result->places);
 
             if (!empty($result->places)) {
-                $firstPlace = is_object($result->places[0]) ? get_object_vars($result->places[0]) : $result->places[0];
+                $firstPlace = $result->places[0];
                 echo "\n✓ Search for 'ঢাকা' found " . count($result->places) . " places\n";
-                echo "  First result: {$firstPlace['address']}\n";
+                echo "  First result: {$firstPlace->address}\n";
             }
         } else {
             // Some search endpoints may return different structure
