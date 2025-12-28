@@ -1,13 +1,13 @@
 <?php
 
-namespace Vendor\BarikoiApi\Tests\Unit;
+namespace Barikoi\BarikoiApis\Tests\Unit;
 
-use Vendor\BarikoiApi\Tests\TestCase;
-use Vendor\BarikoiApi\Services\LocationService;
-use Vendor\BarikoiApi\BarikoiClient;
+use Barikoi\BarikoiApis\Tests\TestCase;
+use Barikoi\BarikoiApis\Services\LocationService;
+use Barikoi\BarikoiApis\BarikoiClient;
 use Illuminate\Support\Facades\Http;
-use Vendor\BarikoiApi\Exceptions\BarikoiApiException;
-use Vendor\BarikoiApi\Exceptions\BarikoiValidationException;
+use Barikoi\BarikoiApis\Exceptions\BarikoiApiException;
+use Barikoi\BarikoiApis\Exceptions\BarikoiValidationException;
 
 class ErrorHandlingTest extends TestCase
 {

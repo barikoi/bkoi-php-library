@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendor\BarikoiApi\Traits;
+namespace Barikoi\BarikoiApis\Traits;
 
 use Illuminate\Support\Facades\Http;
 

@@ -1,9 +1,9 @@
 <?php
 
-namespace Vendor\BarikoiApi\Services;
+namespace Barikoi\BarikoiApis\Services;
 
-use Vendor\BarikoiApi\BarikoiClient;
-use Vendor\BarikoiApi\Exceptions\BarikoiValidationException;
+use Barikoi\BarikoiApis\BarikoiClient;
+use Barikoi\BarikoiApis\Exceptions\BarikoiValidationException;
 
 class RouteService
 {

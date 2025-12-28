@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendor\BarikoiApi\Tests\Support;
+namespace Barikoi\BarikoiApis\Tests\Support;
 
 use Exception;
 

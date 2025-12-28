@@ -1,11 +1,11 @@
 <?php
 
-namespace Vendor\BarikoiApi;
+namespace Barikoi\BarikoiApis;
 
-use Vendor\BarikoiApi\Exceptions\BarikoiValidationException;
-use Vendor\BarikoiApi\Services\GeofenceService;
-use Vendor\BarikoiApi\Services\LocationService;
-use Vendor\BarikoiApi\Services\RouteService;
+use Barikoi\BarikoiApis\Exceptions\BarikoiValidationException;
+use Barikoi\BarikoiApis\Services\GeofenceService;
+use Barikoi\BarikoiApis\Services\LocationService;
+use Barikoi\BarikoiApis\Services\RouteService;
 
 /**
  * Main Barikoi SDK - Your gateway to all Barikoi services

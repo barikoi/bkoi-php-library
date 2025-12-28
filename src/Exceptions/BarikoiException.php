@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendor\BarikoiApi\Exceptions;
+namespace Barikoi\BarikoiApis\Exceptions;
 
 use Exception;
 use Illuminate\Http\Client\Response;

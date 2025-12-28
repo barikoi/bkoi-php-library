@@ -53,8 +53,8 @@ Barikoi::routeOverview(array $points, array $options = [])
 ### Usage
 
 ```php
-use Vendor\PackageName\Facades\Barikoi;
-use Vendor\PackageName\Exceptions\BarikoiValidationException;
+use Barikoi\BarikoiApis\Facades\Barikoi;
+use Barikoi\BarikoiApis\Exceptions\BarikoiValidationException;
 
 try {
     $points = [
@@ -167,7 +167,7 @@ The `startDestination` parameter must be an array with the following structure:
 ### Usage
 
 ```php
-use Vendor\BarikoiApi\Facades\Barikoi;
+use Barikoi\BarikoiApis\Facades\Barikoi;
 
 // Motorcycle route with 'vh' type
 $route = Barikoi::calculateRoute([

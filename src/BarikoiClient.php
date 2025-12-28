@@ -1,12 +1,12 @@
 <?php
 
-namespace Vendor\BarikoiApi;
+namespace Barikoi\BarikoiApis;
 
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
-use Vendor\BarikoiApi\Exceptions\BarikoiApiException;
-use Vendor\BarikoiApi\Exceptions\BarikoiValidationException;
+use Barikoi\BarikoiApis\Exceptions\BarikoiApiException;
+use Barikoi\BarikoiApis\Exceptions\BarikoiValidationException;
 
 /**
  * Barikoi HTTP Client - Handles all API requests

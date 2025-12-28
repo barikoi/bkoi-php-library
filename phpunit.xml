@@ -32,7 +32,7 @@
 
     <!-- Extensions for Discord notifications (PHPUnit 10+) -->
     <extensions>
-        <bootstrap class="Vendor\BarikoiApi\Tests\Support\DiscordTestListener"/>
+        <bootstrap class="Barikoi\BarikoiApis\Tests\Support\DiscordTestListener"/>
     </extensions>
 
     <!-- Code Coverage Configuration -->

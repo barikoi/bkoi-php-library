@@ -1,13 +1,13 @@
 <?php
 
-namespace Vendor\BarikoiApi\Tests\Unit;
+namespace Barikoi\BarikoiApis\Tests\Unit;
 
-use Vendor\BarikoiApi\Tests\TestCase;
-use Vendor\BarikoiApi\Barikoi;
-use Vendor\BarikoiApi\Services\LocationService;
-use Vendor\BarikoiApi\Services\RouteService;
-use Vendor\BarikoiApi\Services\AdministrativeService;
-use Vendor\BarikoiApi\Services\GeofenceService;
+use Barikoi\BarikoiApis\Tests\TestCase;
+use Barikoi\BarikoiApis\Barikoi;
+use Barikoi\BarikoiApis\Services\LocationService;
+use Barikoi\BarikoiApis\Services\RouteService;
+use Barikoi\BarikoiApis\Services\AdministrativeService;
+use Barikoi\BarikoiApis\Services\GeofenceService;
 use Illuminate\Support\Facades\Http;
 
 class BarikoiIntegrationTest extends TestCase

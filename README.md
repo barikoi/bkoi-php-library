@@ -15,7 +15,7 @@ A comprehensive Laravel package for integrating [Barikoi API](https://barikoi.co
 ## Installation
 
 ```bash
-composer require barikoi/barikoi-apis
+composer require barikoi/barikoiapis
 ```
 
 ## Configuration
@@ -23,7 +23,7 @@ composer require barikoi/barikoi-apis
 1. Publish the configuration file:
 
 ```bash
-php artisan vendor:publish --provider="Vendor\PackageName\PackageNameServiceProvider" --tag="config"
+php artisan vendor:publish --provider="Barikoi\BarikoiApis\BarikoiServiceProvider" --tag="config"
 ```
 
 2. Add your Barikoi API credentials to `.env`:
@@ -32,14 +32,14 @@ php artisan vendor:publish --provider="Vendor\PackageName\PackageNameServiceProv
 BARIKOI_API_KEY=your_api_key_here
 ```
 
-Get your API key from [Barikoi](https://barikoi.com).
+Get your API key from [Barikoi](https://developer.barikoi.com).
 
 ---
 
 ## Quick Start
 
 ```php
-use Vendor\PackageName\Facades\Barikoi;
+use Barikoi\BarikoiApis\Facades\Barikoi;
 
 // 1. Reverse geocoding with rich options
 $options = [
@@ -135,7 +135,7 @@ Complete documentation with parameters, conditions, and error handling for each 
 ### Using Facade (Recommended)
 
 ```php
-use Vendor\PackageName\Facades\Barikoi;
+use Barikoi\BarikoiApis\Facades\Barikoi;
 
 $reverse = Barikoi::reverseGeocode(90.3572, 23.8067); // returns stdClass (object)
 $places = Barikoi::autocomplete('restaurant');
@@ -163,9 +163,9 @@ The package provides comprehensive error handling with user-friendly messages.
 ### Basic Usage
 
 ```php
-use Vendor\PackageName\Facades\Barikoi;
-use Vendor\PackageName\Exceptions\BarikoiApiException;
-use Vendor\PackageName\Exceptions\BarikoiValidationException;
+use Barikoi\BarikoiApis\Facades\Barikoi;
+use Barikoi\BarikoiApis\Exceptions\BarikoiApiException;
+use Barikoi\BarikoiApis\Exceptions\BarikoiValidationException;
 
 try {
     $result = Barikoi::reverseGeocode(90.3572, 23.8067);

@@ -1,8 +1,8 @@
 <?php
 
-namespace Vendor\BarikoiApi\Tests\Integration;
+namespace Barikoi\BarikoiApis\Tests\Integration;
 
-use Vendor\BarikoiApi\Facades\Barikoi;
+use Barikoi\BarikoiApis\Facades\Barikoi;
 
 /**
  * Real-world integration tests for location services

@@ -43,9 +43,9 @@ Barikoi::reverseGeocode(float $longitude, float $latitude, array $options = [])
 ### Usage
 
 ```php
-use Vendor\PackageName\Facades\Barikoi;
-use Vendor\PackageName\Exceptions\BarikoiValidationException;
-use Vendor\PackageName\Exceptions\BarikoiApiException;
+use Barikoi\BarikoiApis\Facades\Barikoi;
+use Barikoi\BarikoiApis\Exceptions\BarikoiValidationException;
+use Barikoi\BarikoiApis\Exceptions\BarikoiApiException;
 
 try {
     // Basic usage (returns stdClass)
@@ -144,9 +144,9 @@ Barikoi::geocode(string $address, array $options = [])
 ### Usage
 
 ```php
-use Vendor\PackageName\Facades\Barikoi;
-use Vendor\PackageName\Exceptions\BarikoiValidationException;
-use Vendor\PackageName\Exceptions\BarikoiApiException;
+use Barikoi\BarikoiApis\Facades\Barikoi;
+use Barikoi\BarikoiApis\Exceptions\BarikoiValidationException;
+use Barikoi\BarikoiApis\Exceptions\BarikoiApiException;
 
 try {
     // Basic usage (returns stdClass object)
@@ -401,9 +401,9 @@ Barikoi::placeDetails(string $placeCode, array $options = [])
 ### Usage
 
 ```php
-use Vendor\PackageName\Facades\Barikoi;
-use Vendor\PackageName\Exceptions\BarikoiApiException;
-use Vendor\PackageName\Exceptions\BarikoiValidationException;
+use Barikoi\BarikoiApis\Facades\Barikoi;
+use Barikoi\BarikoiApis\Exceptions\BarikoiApiException;
+use Barikoi\BarikoiApis\Exceptions\BarikoiValidationException;
 
 try {
     // With session_id from searchPlace() for better accuracy
@@ -607,9 +607,9 @@ Barikoi::checkNearby(
 ### Usage
 
 ```php
-use Vendor\PackageName\Facades\Barikoi;
-use Vendor\PackageName\Exceptions\BarikoiValidationException;
-use Vendor\PackageName\Exceptions\BarikoiApiException;
+use Barikoi\BarikoiApis\Facades\Barikoi;
+use Barikoi\BarikoiApis\Exceptions\BarikoiValidationException;
+use Barikoi\BarikoiApis\Exceptions\BarikoiApiException;
 
 try {
     $result = Barikoi::checkNearby(

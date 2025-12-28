@@ -1,10 +1,10 @@
 <?php
 
-namespace Vendor\BarikoiApi\Tests\Unit;
+namespace Barikoi\BarikoiApis\Tests\Unit;
 
-use Vendor\BarikoiApi\Tests\TestCase;
-use Vendor\BarikoiApi\Services\LocationService;
-use Vendor\BarikoiApi\BarikoiClient;
+use Barikoi\BarikoiApis\Tests\TestCase;
+use Barikoi\BarikoiApis\Services\LocationService;
+use Barikoi\BarikoiApis\BarikoiClient;
 use Illuminate\Support\Facades\Http;
 
 class LocationServiceTest extends TestCase
@@ -103,7 +103,7 @@ class LocationServiceTest extends TestCase
     // Test autocomplete throws validation exception for unsupported options
     public function test_autocomplete_throws_for_unsupported_options()
     {
-        $this->expectException(\Vendor\BarikoiApi\Exceptions\BarikoiValidationException::class);
+        $this->expectException(\Barikoi\BarikoiApis\Exceptions\BarikoiValidationException::class);
 
         $this->service->autocomplete('Dhanmondi', [
             'limit' => 10,
@@ -114,7 +114,7 @@ class LocationServiceTest extends TestCase
     // Test reverse geocode throws validation exception for invalid latitude/longitude
     public function test_reverse_geocode_throws_for_invalid_coordinates()
     {
-        $this->expectException(\Vendor\BarikoiApi\Exceptions\BarikoiValidationException::class);
+        $this->expectException(\Barikoi\BarikoiApis\Exceptions\BarikoiValidationException::class);
 
         // Latitude > 90 and longitude > 180 should trigger validation error
         $this->service->reverseGeocode(181.0, 91.0);

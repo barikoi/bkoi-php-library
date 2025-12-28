@@ -1,10 +1,10 @@
 <?php
 
-namespace Vendor\BarikoiApi\Tests\Unit;
+namespace Barikoi\BarikoiApis\Tests\Unit;
 
-use Vendor\BarikoiApi\Tests\TestCase;
-use Vendor\BarikoiApi\Facades\Barikoi;
-use Vendor\BarikoiApi\Services\LocationService;
+use Barikoi\BarikoiApis\Tests\TestCase;
+use Barikoi\BarikoiApis\Facades\Barikoi;
+use Barikoi\BarikoiApis\Services\LocationService;
 use Illuminate\Support\Facades\Http;
 
 class FacadeTest extends TestCase

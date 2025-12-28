@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendor\BarikoiApi\Facades;
+namespace Barikoi\BarikoiApis\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
@@ -8,10 +8,10 @@ use Illuminate\Support\Facades\Facade;
  * Barikoi Facade - Easy access to Barikoi SDK
  *
  * Service Methods:
- * @method static \Vendor\BarikoiApi\Services\LocationService location()
- * @method static \Vendor\BarikoiApi\Services\RouteService route()
- * @method static \Vendor\BarikoiApi\Services\AdministrativeService administrative()
- * @method static \Vendor\BarikoiApi\Services\GeofenceService geofence()
+ * @method static \Barikoi\BarikoiApis\Services\LocationService location()
+ * @method static \Barikoi\BarikoiApis\Services\RouteService route()
+ * @method static \Barikoi\BarikoiApis\Services\AdministrativeService administrative()
+ * @method static \Barikoi\BarikoiApis\Services\GeofenceService geofence()
  *
  * Location Methods (Direct Access):
  * @method static object reverseGeocode(float $longitude, float $latitude, array $options = [])
@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static object calculateRoute(array $startDestination, array $options = [])
  * @method static object detailedNavigation(float $startLat, float $startLng, float $destLat, float $destLng, array $options = [])
  *
- * @see \Vendor\BarikoiApi\Barikoi
+ * @see \Barikoi\BarikoiApis\Barikoi
  */
 class Barikoi extends Facade
 {

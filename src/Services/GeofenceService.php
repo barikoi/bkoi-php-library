@@ -1,9 +1,9 @@
 <?php
 
-namespace Vendor\BarikoiApi\Services;
+namespace Barikoi\BarikoiApis\Services;
 
-use Vendor\BarikoiApi\BarikoiClient;
-use Vendor\BarikoiApi\Exceptions\BarikoiValidationException;
+use Barikoi\BarikoiApis\BarikoiClient;
+use Barikoi\BarikoiApis\Exceptions\BarikoiValidationException;
 
 /**
  * Geofence Service
@@ -33,7 +33,7 @@ class GeofenceService
      * @param float $currentLatitude The latitude of the current/checking point
      * @param float $currentLongitude The longitude of the current/checking point
      * @return array Response indicating whether current location is within radius
-     * @throws \Vendor\BarikoiApi\Exceptions\BarikoiValidationException
+     * @throws \Barikoi\BarikoiApis\Exceptions\BarikoiValidationException
      *
      * @example
      * ```php

@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendor\BarikoiApi\Tests\Support;
+namespace Barikoi\BarikoiApis\Tests\Support;
 
 use PHPUnit\Event\Test\Failed;
 use PHPUnit\Event\Test\FailedSubscriber;

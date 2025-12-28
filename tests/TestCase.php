@@ -1,9 +1,9 @@
 <?php
 
-namespace Vendor\BarikoiApi\Tests;
+namespace Barikoi\BarikoiApis\Tests;
 
 use Orchestra\Testbench\TestCase as Orchestra;
-use Vendor\BarikoiApi\BarikoiServiceProvider;
+use Barikoi\BarikoiApis\BarikoiServiceProvider;
 use Illuminate\Support\Facades\Http;
 
 class TestCase extends Orchestra

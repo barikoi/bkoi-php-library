@@ -1,8 +1,8 @@
 <?php
 
-namespace Vendor\BarikoiApi\Tests\Integration;
+namespace Barikoi\BarikoiApis\Tests\Integration;
 
-use Vendor\BarikoiApi\Facades\Barikoi;
+use Barikoi\BarikoiApis\Facades\Barikoi;
 
 /**
  * Real-world integration tests for route services
@@ -101,7 +101,7 @@ class RealWorldRouteTest extends IntegrationTestCase
 
         try {
             $result = Barikoi::route()->match($points);
-        } catch (\Vendor\BarikoiApi\Exceptions\BarikoiApiException $e) {
+        } catch (\Barikoi\BarikoiApis\Exceptions\BarikoiApiException $e) {
             // Route matching endpoint not available in current API version
             if (strpos($e->getMessage(), 'could not be found') !== false) {
                 $this->markTestSkipped('Route matching endpoint not available in current API version');

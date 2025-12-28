@@ -1,9 +1,9 @@
 <?php
 
-namespace Vendor\BarikoiApi\Tests\Feature;
+namespace Barikoi\BarikoiApis\Tests\Feature;
 
-use Vendor\BarikoiApi\Tests\TestCase;
-use Vendor\BarikoiApi\Facades\Barikoi;
+use Barikoi\BarikoiApis\Tests\TestCase;
+use Barikoi\BarikoiApis\Facades\Barikoi;
 use Illuminate\Support\Facades\Http;
 
 class BarikoiLocationTest extends TestCase

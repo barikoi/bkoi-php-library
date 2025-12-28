@@ -1,19 +1,19 @@
 <?php
 
-namespace Vendor\BarikoiApi\Tests\Unit;
+namespace Barikoi\BarikoiApis\Tests\Unit;
 
-use Vendor\BarikoiApi\Tests\TestCase;
-use Vendor\BarikoiApi\BarikoiClient;
-use Vendor\BarikoiApi\Services\GeofenceService;
-use Vendor\BarikoiApi\Exceptions\BarikoiValidationException;
+use Barikoi\BarikoiApis\Tests\TestCase;
+use Barikoi\BarikoiApis\BarikoiClient;
+use Barikoi\BarikoiApis\Services\GeofenceService;
+use Barikoi\BarikoiApis\Exceptions\BarikoiValidationException;
 use Illuminate\Support\Facades\Http;
 
 class GeofenceServiceTest extends TestCase
 {
     public function test_geofence_check_nearby_valid()
     {
-        $client = new \Vendor\BarikoiApi\BarikoiClient('test-key', 'https://barikoi.xyz/');
-        $service = new \Vendor\BarikoiApi\Services\GeofenceService($client);
+        $client = new \Barikoi\BarikoiApis\BarikoiClient('test-key', 'https://barikoi.xyz/');
+        $service = new \Barikoi\BarikoiApis\Services\GeofenceService($client);
 //        \Illuminate\Support\Facades\Http::fake([
 //            '*' => \Illuminate\Support\Facades\Http::response([
 //                'id' => true,
@@ -32,26 +32,26 @@ class GeofenceServiceTest extends TestCase
 
     public function test_geofence_check_nearby_invalid_latitude()
     {
-        $client = new \Vendor\BarikoiApi\BarikoiClient('test-key', 'https://barikoi.xyz/');
-        $service = new \Vendor\BarikoiApi\Services\GeofenceService($client);
-        $this->expectException(\Vendor\BarikoiApi\Exceptions\BarikoiValidationException::class);
+        $client = new \Barikoi\BarikoiApis\BarikoiClient('test-key', 'https://barikoi.xyz/');
+        $service = new \Barikoi\BarikoiApis\Services\GeofenceService($client);
+        $this->expectException(\Barikoi\BarikoiApis\Exceptions\BarikoiValidationException::class);
         $service->checkNearby(100.0, 90.37852866512583, 50, 23.762412943322726, 90.37864864706823);
     }
 
     public function test_geofence_check_nearby_invalid_longitude()
     {
-        $client = new \Vendor\BarikoiApi\BarikoiClient('test-key', 'https://barikoi.xyz/');
-        $service = new \Vendor\BarikoiApi\Services\GeofenceService($client);
-        $this->expectException(\Vendor\BarikoiApi\Exceptions\BarikoiValidationException::class);
+        $client = new \Barikoi\BarikoiApis\BarikoiClient('test-key', 'https://barikoi.xyz/');
+        $service = new \Barikoi\BarikoiApis\Services\GeofenceService($client);
+        $this->expectException(\Barikoi\BarikoiApis\Exceptions\BarikoiValidationException::class);
         $service->checkNearby(23.76245538673939, 200.0, 50, 23.762412943322726, 90.37864864706823);
     }
 
 
     public function test_geofence_check_nearby_invalid_radius()
     {
-        $client = new \Vendor\BarikoiApi\BarikoiClient('test-key', 'https://barikoi.xyz/');
-        $service = new \Vendor\BarikoiApi\Services\GeofenceService($client);
-        $this->expectException(\Vendor\BarikoiApi\Exceptions\BarikoiValidationException::class);
+        $client = new \Barikoi\BarikoiApis\BarikoiClient('test-key', 'https://barikoi.xyz/');
+        $service = new \Barikoi\BarikoiApis\Services\GeofenceService($client);
+        $this->expectException(\Barikoi\BarikoiApis\Exceptions\BarikoiValidationException::class);
         $service->checkNearby(
             23.76245538673939, // destinationLatitude
             90.37852866512583, // destinationLongitude
