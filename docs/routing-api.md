@@ -73,8 +73,8 @@ try {
     // Access response (object / stdClass)
     $thisRoute = $route->routes[0] ?? null;
     if ($thisRoute) {
-        $distance = $thisRoute['distance']; // in meters
-        $duration = $thisRoute['duration']; // in seconds
+        $distance = $thisRoute->distance; // in meters
+        $duration = $thisRoute->duration; // in seconds
     }
 
 } catch (BarikoiValidationException $e) {
@@ -101,9 +101,8 @@ try {
 ### Conditions
 
 - Minimum 2 points required
-- Maximum 25 waypoints
+- Maximum 50 waypoints
 - Points must be valid coordinates
-- Points should be in Bangladesh
 
 ### Error Handling
 

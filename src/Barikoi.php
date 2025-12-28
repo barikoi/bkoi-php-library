@@ -110,7 +110,7 @@ class Barikoi
     // Check nearby location within a specified radius
     // Determine if a current location is within a specified radius of a destination point
     // Radius in meters (default 50m)
-    public function checkNearby(float $destinationLatitude,float $destinationLongitude,float $currentLatitude,float $currentLongitude,float $radius = 50): array
+    public function checkNearby(float $destinationLatitude,float $destinationLongitude,float $currentLatitude,float $currentLongitude,float $radius = 50): array|object
     {
         return $this->geofence()->checkNearby($destinationLatitude, $destinationLongitude, $currentLatitude, $currentLongitude, $radius);
     }

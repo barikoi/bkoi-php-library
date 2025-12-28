@@ -59,7 +59,29 @@ $options = [
 ];
 $reverse = Barikoi::reverseGeocode(90.3572, 23.8067, $options);
 
-// 2. Detailed route between two points (returns stdClass object with "trip")
+$autocomplete=Barikoi::autocomplete('barikoi', [
+                'bangla'       => true,
+                'city'         => 'dhaka',
+                'sub_area'     => true,
+                'sub_district' => true,
+            ]);
+
+// Geocode (Rupantor) - returns stdClass (object)
+$geocoded = Barikoi::geocode('shawrapara');
+
+// Search place by text
+$places = Barikoi::searchPlace('Dhanmondi');
+
+// Nearby search
+$nearby = Barikoi::nearby(90.38305163, 23.87188719, 0.5, 2);
+
+// Check nearby (geofence check)
+$checkNearby = Barikoi::checkNearby(23.8067, 90.3572, 23.8070, 90.3575, 50);
+
+// Snap to nearest road
+$snapped = Barikoi::snapToRoad(23.8067, 90.3572);
+
+// Detailed route between two points (returns stdClass object with "trip")
 $route = Barikoi::calculateRoute([
     'start' => ['longitude' => 90.36558776260725, 'latitude' => 23.791645065364126],
     'destination' => ['longitude' => 90.3676300089066, 'latitude' => 23.784715477921843],
@@ -68,7 +90,7 @@ $route = Barikoi::calculateRoute([
     'profile' => 'motorcycle'  // 'bike', 'motorcycle', or 'car'
 ]);
 
-// 3. Simple route overview (returns stdClass object)
+// Simple route overview (returns stdClass object)
 $overview = Barikoi::routeOverview([
     ['longitude' => 90.3572, 'latitude' => 23.8067],
     ['longitude' => 90.3680, 'latitude' => 23.8100],
@@ -77,17 +99,6 @@ $overview = Barikoi::routeOverview([
     'geometries' => 'polyline',
 ]);
 
-// 4. Geocode (Rupantor) - returns stdClass (object)
-$geocoded = Barikoi::geocode('shawrapara');
-
-// 5. Nearby search
-$nearby = Barikoi::nearby(90.38305163, 23.87188719, 0.5, 2);
-
-// 6. Search place by text
-$places = Barikoi::searchPlace('Dhanmondi');
-
-// 7. Snap to nearest road
-$snapped = Barikoi::snapToRoad(23.8067, 90.3572);
 ```
 
 ---
@@ -121,7 +132,7 @@ Complete documentation with parameters, conditions, and error handling for each 
 ```php
 use Vendor\PackageName\Facades\Barikoi;
 
-$address = Barikoi::reverseGeocode(90.3572, 23.8067); // returns stdClass (object)
+$reverse = Barikoi::reverseGeocode(90.3572, 23.8067); // returns stdClass (object)
 $places = Barikoi::autocomplete('restaurant');
 ```
 

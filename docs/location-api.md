@@ -238,7 +238,7 @@ Barikoi::autocomplete(string $query, array $options = [])
 ```php
 try {
     // Basic autocomplete
-    $suggestions = Barikoi::autocomplete('Dhan');
+    $suggestions = Barikoi::autocomplete('Dhaka');
 
     // With Bangla and city filter
     $suggestions = Barikoi::autocomplete('barikoi', [
