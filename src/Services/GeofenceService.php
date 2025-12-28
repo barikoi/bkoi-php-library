@@ -1,8 +1,9 @@
 <?php
 
-namespace Vendor\BarikoiApi\Services;
+namespace Barikoi\BarikoiApis\Services;
 
-use Vendor\BarikoiApi\BarikoiClient;
+use Barikoi\BarikoiApis\BarikoiClient;
+use Barikoi\BarikoiApis\Exceptions\BarikoiValidationException;
 
 /**
  * Geofence Service
@@ -24,14 +25,15 @@ class GeofenceService
      * Check nearby location within a specified radius
      *
      * Determine if a current location is within a specified radius of a
-     * destination point. Useful for proximity detection and arrival notifications.
+     * destination point. Throws BarikoiValidationException for invalid coordinates or radius.
      *
      * @param float $destinationLatitude The latitude of the destination/target point
      * @param float $destinationLongitude The longitude of the destination/target point
-     * @param int $radius The proximity radius in meters
+     * @param int $radius The proximity radius in meters (must be positive)
      * @param float $currentLatitude The latitude of the current/checking point
      * @param float $currentLongitude The longitude of the current/checking point
      * @return array Response indicating whether current location is within radius
+     * @throws \Barikoi\BarikoiApis\Exceptions\BarikoiValidationException
      *
      * @example
      * ```php
@@ -42,24 +44,37 @@ class GeofenceService
      *     23.8070,  // current latitude
      *     90.3575   // current longitude
      * );
-     * // Returns: ['inside' => true/false, 'distance' => ...]
+     * // Returns: ['is_nearby' => true/false, 'distance' => ...]
      * ```
      */
-    public function checkNearby(
-        float $destinationLatitude,
-        float $destinationLongitude,
-        int $radius,
-        float $currentLatitude,
-        float $currentLongitude
-    ): array {
-        // V2: GET /v2/api/check/nearby
-        return $this->client->get('/v2/api/check/nearby', [
+    public function checkNearby(float $destinationLatitude,float $destinationLongitude,float $currentLatitude,float $currentLongitude,float $radius = 50): array|object
+    {
+        // Validate destination coordinates
+        if ($destinationLatitude < -90 || $destinationLatitude > 90 || $destinationLongitude < -180 || $destinationLongitude > 180) {
+            throw new BarikoiValidationException('Invalid destination latitude or longitude');
+        }
+        // Validate current coordinates
+        if ($currentLatitude < -90 || $currentLatitude > 90 || $currentLongitude < -180 || $currentLongitude > 180) {
+            throw new BarikoiValidationException('Invalid current latitude or longitude');
+        }
+        if ($radius <= 0) {
+            throw new BarikoiValidationException('Radius must be positive');
+        }
+
+        $params = [
+            'api_key' => config('barikoi.api_key'),
             'destination_latitude' => $destinationLatitude,
             'destination_longitude' => $destinationLongitude,
-            'radius' => $radius,
             'current_latitude' => $currentLatitude,
             'current_longitude' => $currentLongitude,
-        ]);
-    }
-}
+            'radius' => $radius,
+        ];
 
+        $baseUrl = config('barikoi.base_url');
+
+        $client = new BarikoiClient(config('barikoi.api_key'), $baseUrl);
+
+        return  $client->get('/v2/api/check/nearby', $params);
+    }
+
+}

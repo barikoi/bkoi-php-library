@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendor\BarikoiApi\Tests;
+namespace Barikoi\BarikoiApis\Tests;
 
 use PHPUnit\TextUI\DefaultResultPrinter;
 use PHPUnit\Framework\TestCase;

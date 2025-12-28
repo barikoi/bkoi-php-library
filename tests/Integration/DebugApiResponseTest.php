@@ -1,8 +1,8 @@
 <?php
 
-namespace Vendor\BarikoiApi\Tests\Integration;
+namespace Barikoi\BarikoiApis\Tests\Integration;
 
-use Vendor\BarikoiApi\Facades\Barikoi;
+use Barikoi\BarikoiApis\Facades\Barikoi;
 
 /**
  * Debug test to see actual API responses
@@ -23,7 +23,7 @@ class DebugApiResponseTest extends IntegrationTestCase
         echo json_encode($result, JSON_PRETTY_PRINT);
         echo "\n================================\n\n";
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     /**
@@ -37,7 +37,7 @@ class DebugApiResponseTest extends IntegrationTestCase
         echo json_encode($result, JSON_PRETTY_PRINT);
         echo "\n=======================\n\n";
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     /**
@@ -51,7 +51,7 @@ class DebugApiResponseTest extends IntegrationTestCase
         echo json_encode($result, JSON_PRETTY_PRINT);
         echo "\n========================\n\n";
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     /**
@@ -68,6 +68,6 @@ class DebugApiResponseTest extends IntegrationTestCase
         echo json_encode($result, JSON_PRETTY_PRINT);
         echo "\n======================\n\n";
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 }

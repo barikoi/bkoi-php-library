@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendor\BarikoiApi\Tests\Support;
+namespace Barikoi\BarikoiApis\Tests\Support;
 
 use Exception;
 
@@ -145,6 +145,7 @@ class DiscordNotifier
         ];
     }
 
+    
     /**
      * Build Discord embed payload for test summary
      */
@@ -329,7 +330,36 @@ class DiscordNotifier
             ? env('APP_ENV', (env('CI') ? 'CI' : 'local'))
             : (getenv('APP_ENV') ?: (getenv('CI') ? 'CI' : 'local'));
         $php = PHP_VERSION;
-        return "PHP {$php} ({$env})";
+
+        $laravelVersion = function_exists('env')
+            ? env('LARAVEL_VERSION')
+            : getenv('LARAVEL_VERSION');
+
+        $testbenchVersion = function_exists('env')
+            ? env('TESTBENCH_VERSION')
+            : getenv('TESTBENCH_VERSION');
+
+        $dependencyVersion = function_exists('env')
+            ? env('DEPENDENCY_VERSION')
+            : getenv('DEPENDENCY_VERSION');
+
+        $info = "PHP {$php}";
+
+        if ($laravelVersion) {
+            $info .= " | Laravel {$laravelVersion}";
+        }
+
+        if ($testbenchVersion) {
+            $info .= " | Testbench {$testbenchVersion}";
+        }
+
+        if ($dependencyVersion) {
+            $info .= " | {$dependencyVersion}";
+        }
+
+        $info .= " ({$env})";
+
+        return $info;
     }
 
     /**

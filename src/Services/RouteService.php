@@ -1,9 +1,9 @@
 <?php
 
-namespace Vendor\BarikoiApi\Services;
+namespace Barikoi\BarikoiApis\Services;
 
-use Vendor\BarikoiApi\BarikoiClient;
-use Vendor\BarikoiApi\Exceptions\BarikoiValidationException;
+use Barikoi\BarikoiApis\BarikoiClient;
+use Barikoi\BarikoiApis\Exceptions\BarikoiValidationException;
 
 class RouteService
 {
@@ -83,7 +83,7 @@ class RouteService
      * @param array $options Optional parameters:
      *                       - profile (string): 'car' (default) or 'foot'
      *                       - geometries (string): 'polyline' or 'geojson'
-     * @return array Response containing route geometry, distance, and duration
+     * @return object Returns stdClass matching Barikoi route API response format
      * @throws \InvalidArgumentException If invalid profile is provided
      *
      * @example
@@ -101,7 +101,7 @@ class RouteService
      * ], ['profile' => 'foot']);
      * ```
      */
-    public function routeOverview(array $points, array $options = []): array
+    public function routeOverview(array $points, array $options = []): object
     {
         // Validate coordinates and profile
         $this->validatePoints($points);
@@ -134,7 +134,7 @@ class RouteService
      *                       - steps (bool): Include step-by-step instructions
      *                       - overview (string): Geometry overview detail level
      *                       - geometries (string): 'polyline' or 'geojson'
-     * @return array Response containing detailed route information with turn-by-turn directions
+     * @return object Returns object (stdClass) matching Barikoi route API response format
      * @throws \InvalidArgumentException If invalid profile is provided
      *
      * @example
@@ -152,7 +152,7 @@ class RouteService
      * ], ['profile' => 'foot', 'steps' => true]);
      * ```
      */
-    public function detailed(array $points, array $options = []): array
+    public function detailed(array $points, array $options = []): object
     {
         // Validate coordinates and profile
         $this->validatePoints($points);
@@ -291,10 +291,10 @@ class RouteService
      * @param float $toLongitude Ending point longitude
      * @param float $toLatitude Ending point latitude
      * @param array $options Optional parameters (profile: 'car' or 'foot')
-     * @return array Response with distance and route info
+     * @return object Returns stdClass matching Barikoi route API response format
      * @throws \InvalidArgumentException If invalid profile is provided
      */
-    public function distance(float $fromLongitude, float $fromLatitude, float $toLongitude, float $toLatitude, array $options = []): array
+    public function distance(float $fromLongitude, float $fromLatitude, float $toLongitude, float $toLatitude, array $options = []): object
     {
         $points = [
             ['longitude' => $fromLongitude, 'latitude' => $fromLatitude],
@@ -314,10 +314,10 @@ class RouteService
      * @param float $toLongitude Ending point longitude
      * @param float $toLatitude Ending point latitude
      * @param array $options Optional parameters (profile: 'car' or 'foot')
-     * @return array Response with turn-by-turn directions
+     * @return object Returns object (stdClass) matching Barikoi route API response format
      * @throws \InvalidArgumentException If invalid profile is provided
      */
-    public function directions(float $fromLongitude, float $fromLatitude, float $toLongitude, float $toLatitude, array $options = []): array
+    public function directions(float $fromLongitude, float $fromLatitude, float $toLongitude, float $toLatitude, array $options = []): object
     {
         $points = [
             ['longitude' => $fromLongitude, 'latitude' => $fromLatitude],
@@ -341,7 +341,7 @@ class RouteService
      *                       - profile (string): 'bike', 'motorcycle' (default), or 'car'
      *                       - type (string): Route type - 'vh' (default, motorcycle only) or 'gh' (all profiles)
      *                       - country_code (string): ISO Alpha-3 country code (default: 'bgd')
-     * @return array Response with detailed navigation instructions, distance, duration, cost
+     * @return object Returns stdClass matching Barikoi routing API response format (with \"trip\" object)
      * @throws \InvalidArgumentException If invalid profile, type, or unsupported profile-type combination
      *
      * @example
@@ -373,7 +373,7 @@ class RouteService
         float $destinationLatitude,
         float $destinationLongitude,
         array $options = []
-    ): array {
+    ): object {
         // Define supported profiles for each type
         $support = [
             'vh' => ['motorcycle'],
@@ -390,7 +390,7 @@ class RouteService
 
         // Validate type
         if (!in_array($type, $validTypes)) {
-            return [
+            return (object) [
                 'status' => 400,
                 'error' => 'invalid_type',
                 'message' => "Type '{$type}' is not valid",
@@ -400,7 +400,7 @@ class RouteService
 
         // Validate profile
         if (!in_array($profile, $validProfiles)) {
-            return [
+            return (object) [
                 'status' => 400,
                 'error' => 'invalid_profile',
                 'message' => "Profile '{$profile}' is not valid",
@@ -410,7 +410,7 @@ class RouteService
 
         // Cross-validate: Check if profile is supported by the selected type
         if (!in_array($profile, $support[$type])) {
-            return [
+            return (object) [
                 'status' => 400,
                 'error' => 'unsupported_combination',
                 'message' => "Profile '{$profile}' not supported for type '{$type}'",
@@ -444,8 +444,8 @@ class RouteService
             ],
         ];
 
-        // Make POST request with JSON body
-        $endpoint = '/routing?' . http_build_query($queryParams);
+        // Make POST request with JSON body to v2 routing endpoint
+        $endpoint = '/v2/api/routing?' . http_build_query($queryParams);
         return $this->client->postJson($endpoint, $data);
     }
 }

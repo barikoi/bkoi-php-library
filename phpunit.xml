@@ -26,12 +26,23 @@
         <env name="QUEUE_CONNECTION" value="sync"/>
 
         <!-- Discord Notifications -->
-        <env name="DISCORD_WEBHOOK_URL" value="https://discord.com/api/webhooks/1417786948814110770/pXbDL-WTjd0kpORBIpjk-b7QVA_9u6B0HMMRDDlFtIlVLOoS78Vm5sP3f89LAuJrdnta"/>
-        <env name="DISCORD_NOTIFICATIONS_ENABLED" value="true"/>
+        <!-- These are read from system environment variables -->
+        <!-- Set DISCORD_WEBHOOK_URL and DISCORD_NOTIFICATIONS_ENABLED in your .env or system environment -->
     </php>
 
     <!-- Extensions for Discord notifications (PHPUnit 10+) -->
     <extensions>
-        <bootstrap class="Vendor\BarikoiApi\Tests\Support\DiscordTestListener"/>
+        <bootstrap class="Barikoi\BarikoiApis\Tests\Support\DiscordTestListener"/>
     </extensions>
+
+    <!-- Code Coverage Configuration -->
+    <coverage>
+        <include>
+            <directory suffix=".php">./src</directory>
+        </include>
+        <exclude>
+            <directory>./vendor</directory>
+            <directory>./tests</directory>
+        </exclude>
+    </coverage>
 </phpunit>

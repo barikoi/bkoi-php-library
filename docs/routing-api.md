@@ -47,13 +47,14 @@ Barikoi::routeOverview(array $points, array $options = [])
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `profile` | string | 'car' | Transportation mode |
+| `profile` | string | 'car' | Transportation mode. **Allowed values:** `car` or `foot` only |
+| `geometries` | string | 'polyline' | Returned route geometry format (influences overview and per step). **Expected values:** `polyline`, `polyline6`, or `geojson` | 
 
 ### Usage
 
 ```php
-use Vendor\PackageName\Facades\Barikoi;
-use Vendor\PackageName\Exceptions\BarikoiValidationException;
+use Barikoi\BarikoiApis\Facades\Barikoi;
+use Barikoi\BarikoiApis\Exceptions\BarikoiValidationException;
 
 try {
     $points = [
@@ -61,7 +62,7 @@ try {
         ['longitude' => 90.3680, 'latitude' => 23.8100],
     ];
 
-    // Car route
+    // Car route (returns stdClass object)
     $route = Barikoi::routeOverview($points);
 
     // Walking route
@@ -69,8 +70,12 @@ try {
         'profile' => 'foot'
     ]);
 
-    $distance = $route['distance']; // in meters
-    $duration = $route['duration']; // in seconds
+    // Access response (object / stdClass)
+    $thisRoute = $route->routes[0] ?? null;
+    if ($thisRoute) {
+        $distance = $thisRoute->distance; // in meters
+        $duration = $thisRoute->duration; // in seconds
+    }
 
 } catch (BarikoiValidationException $e) {
     echo "Invalid route: " . $e->getMessage();
@@ -80,164 +85,157 @@ try {
 ### Response
 
 ```php
-[
-    'distance' => 1234,        // meters
-    'duration' => 456,         // seconds
-    'geometry' => '...',       // encoded polyline
-    'status' => 200
-]
+{
+    "code": "Ok",
+    "routes": [
+        {
+            "distance": 1234,        // meters
+            "duration": 456,         // seconds
+            "geometry": "..."        // encoded polyline (polyline6 when requested)
+        }
+        // ... possibly more routes
+    ]
+}
 ```
 
 ### Conditions
 
 - Minimum 2 points required
-- Maximum 25 waypoints
+- Maximum 50 waypoints
 - Points must be valid coordinates
-- Points should be in Bangladesh
 
 ### Error Handling
 
 | Error Code | Exception | Cause | Solution |
 |------------|-----------|-------|----------|
 | 400 | `BarikoiValidationException` | Less than 2 points | Provide origin and destination |
-| 400 | `BarikoiValidationException` | Invalid profile | Use: car, foot, motorcycle, bike |
+| 400 | `BarikoiValidationException` | Invalid profile | Use only: `car` or `foot` |
 | 400 | `BarikoiValidationException` | Invalid coordinates | Check lat/lng values |
 | 404 | `BarikoiApiException` | No route found | Points may be too far or unreachable |
 
 ---
 
-## Detailed Route
+## Calculate Route
 
-Get route with turn-by-turn directions.
+Calculate detailed route with navigation instructions using the routing API (returns object with `trip`).
 
 ### Method
 
 ```php
-Barikoi::calculateRoute(array $points, array $options = [])
+Barikoi::calculateRoute(array $startDestination, array $options = [])
 ```
 
 ### Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `points` | array | Yes | Array of coordinate objects |
-| `options` | array | No | Routing options |
+| `startDestination` | array | Yes | Array containing `start` and `destination` keys, each with `longitude` and `latitude` (see format below) |
+| `options` | array | No | Routing options (`type`, `profile`, `country_code`) |
+
+### Start/Destination Format
+
+The `startDestination` parameter must be an array with the following structure:
+
+```php
+[
+    'start' => [
+        'longitude' => float,  // Start point longitude (-180 to 180)
+        'latitude' => float     // Start point latitude (-90 to 90)
+    ],
+    'destination' => [
+        'longitude' => float,  // Destination longitude (-180 to 180)
+        'latitude' => float    // Destination latitude (-90 to 90)
+    ]
+]
+```
+
+**Validation:**
+- Both `start` and `destination` keys are required
+- Each must contain `longitude` and `latitude` keys
+- Coordinates must be numeric
+- Latitude must be between -90 and 90
+- Longitude must be between -180 and 180
 
 ### Options
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `profile` | string | 'car' | Transportation mode |
-| `steps` | boolean | false | Include turn-by-turn steps |
-| `alternatives` | boolean | false | Include alternative routes |
+| `type` | string | `'vh'` | Routing engine type: `vh` (motorcycle only) or `gh` (all profiles) |
+| `profile` | string | `'motorcycle'` | Transport profile: `motorcycle`, `car`, or `bike` |
+| `country_code` | string | `'bgd'` | ISO Alpha-3 country code |
 
 ### Usage
 
 ```php
-try {
-    $points = [
-        ['longitude' => 90.3572, 'latitude' => 23.8067],
-        ['longitude' => 90.3680, 'latitude' => 23.8100],
-    ];
+use Barikoi\BarikoiApis\Facades\Barikoi;
 
-    $route = Barikoi::calculateRoute($points, [
-        'profile' => 'car',
-        'steps' => true,
-        'alternatives' => true,
-    ]);
+// Motorcycle route with 'vh' type
+$route = Barikoi::calculateRoute([
+    'start' => [
+        'longitude' => 90.36558776260725,
+        'latitude' => 23.791645065364126
+    ],
+    'destination' => [
+        'longitude' => 90.3676300089066,
+        'latitude' => 23.784715477921843
+    ],
+], [
+    'type' => 'vh',
+    'profile' => 'motorcycle'
+]);
 
-    // Main route
-    $mainRoute = $route['routes'][0];
-
-    // Turn-by-turn instructions
-    foreach ($mainRoute['legs'][0]['steps'] as $step) {
-        echo $step['instruction'];
-        echo "Distance: " . $step['distance'] . "m";
-    }
-
-    // Alternative routes
-    if (isset($route['routes'][1])) {
-        $alternativeRoute = $route['routes'][1];
-    }
-
-} catch (BarikoiValidationException $e) {
-    echo "Route error: " . $e->getMessage();
-}
+// Car route with 'gh' type
+$carRoute = Barikoi::calculateRoute([
+    'start' => ['longitude' => 90.365588, 'latitude' => 23.791645],
+    'destination' => ['longitude' => 90.367630, 'latitude' => 23.784715],
+], [
+    'type' => 'gh',
+    'profile' => 'car'
+]);
 ```
 
 ### Response
 
+Returns navigation route with trip:
 ```php
-[
-    'routes' => [
-        [
-            'distance' => 1234,
-            'duration' => 456,
-            'geometry' => '...',
-            'legs' => [
-                [
-                    'steps' => [
-                        [
-                            'instruction' => 'Head north on Road ABC',
-                            'distance' => 100,
-                            'duration' => 20,
-                        ],
-                        // ... more steps
-                    ]
-                ]
-            ]
+{
+    "trip": {
+        "locations": [
+            { "type": "break", "lat": 23.791645, "lon": 90.365587 },
+            { "type": "break", "lat": 23.784715, "lon": 90.36763 }
         ],
-        // ... alternative routes if requested
-    ],
-    'status' => 200
-]
+        "legs": [
+            {
+                "maneuvers": [
+                    {
+                        "instruction": "Drive north.",
+                        "time": 1.011,
+                        "length": 0.006
+                    }
+                ],
+                "summary": {
+                    "length": 2.34,
+                    "time": 320
+                }
+            }
+        ]
+    }
+}
 ```
 
-### Conditions
+### Validation
 
-- Minimum 2 points
-- Steps only available with `steps: true`
-- Alternatives may not always be available
+The start/destination format includes automatic validation:
+- Validates that `start` and `destination` keys exist
+- Validates that both contain `longitude` and `latitude` keys
+- Validates that coordinates are numeric
+- Validates coordinate ranges (lat: -90 to 90, lng: -180 to 180)
 
 ### Error Handling
 
-Same as Route Overview
-
----
-
-### Best Practices
-
-1. **Always validate coordinates before sending**
-   ```php
-   if ($lat < -90 || $lat > 90 || $lng < -180 || $lng > 180) {
-       throw new \InvalidArgumentException('Invalid coordinates');
-   }
-   ```
-
-2. **Handle 404 gracefully**
-   ```php
-   } catch (BarikoiApiException $e) {
-       if ($e->getCode() === 404) {
-           return response()->json(['error' => 'No route found'], 200);
-       }
-   }
-   ```
-
-3. **Implement retry for 500 errors**
-   ```php
-   } catch (BarikoiApiException $e) {
-       if ($e->getCode() === 500) {
-           // Retry after 2 seconds
-           sleep(2);
-           return $this->calculateRoute($points);
-       }
-   }
-   ```
-
-4. **Cache routes to avoid rate limits**
-   ```php
-   $cacheKey = "route_" . md5(json_encode($points));
-   return Cache::remember($cacheKey, 3600, function() use ($points) {
-       return Barikoi::calculateRoute($points);
-   });
-   ```
+| Error | Exception | Cause | Solution |
+|-------|-----------|-------|----------|
+| Invalid format | `BarikoiValidationException` | Missing `start` or `destination` keys | Provide both keys |
+| Invalid coordinates | `BarikoiValidationException` | Missing or invalid lat/lng | Check coordinate format |
+| Invalid range | `BarikoiValidationException` | Coordinates out of range | Use valid lat (-90 to 90) and lng (-180 to 180) |
+| Invalid type/profile | Object with `status: 400` | Unsupported combination | Use valid `type`/`profile` combination |

@@ -1,10 +1,10 @@
 <?php
 
-namespace Vendor\BarikoiApi\Tests\Unit;
+namespace Barikoi\BarikoiApis\Tests\Unit;
 
-use Vendor\BarikoiApi\Tests\TestCase;
-use Vendor\BarikoiApi\Services\LocationService;
-use Vendor\BarikoiApi\BarikoiClient;
+use Barikoi\BarikoiApis\Tests\TestCase;
+use Barikoi\BarikoiApis\Services\LocationService;
+use Barikoi\BarikoiApis\BarikoiClient;
 use Illuminate\Support\Facades\Http;
 
 class LocationServiceEdgeCaseTest extends TestCase
@@ -25,7 +25,7 @@ class LocationServiceEdgeCaseTest extends TestCase
 
         $result = $this->service->reverseGeocode(-90.3572, -23.8067);
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
         Http::assertSent(function ($request) {
             return str_contains($request->url(), 'longitude=-90.3572')
                 && str_contains($request->url(), 'latitude=-23.8067');
@@ -39,7 +39,7 @@ class LocationServiceEdgeCaseTest extends TestCase
 
         $result = $this->service->reverseGeocode(0, 0);
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
         Http::assertSent(function ($request) {
             return str_contains($request->url(), 'longitude=0')
                 && str_contains($request->url(), 'latitude=0');
@@ -53,7 +53,7 @@ class LocationServiceEdgeCaseTest extends TestCase
 
         $result = $this->service->reverseGeocode(90.35720123456, 23.80670987654);
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test reverse geocode with mixed boolean and string options
@@ -84,7 +84,7 @@ class LocationServiceEdgeCaseTest extends TestCase
 
         $result = $this->service->autocomplete('');
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test autocomplete with special characters
@@ -94,7 +94,7 @@ class LocationServiceEdgeCaseTest extends TestCase
 
         $result = $this->service->autocomplete('Dhanmondi & Road #27');
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test autocomplete with unicode/bangla text
@@ -104,7 +104,7 @@ class LocationServiceEdgeCaseTest extends TestCase
 
         $result = $this->service->autocomplete('ধানমন্ডি');
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test geocode with very long address
@@ -115,7 +115,7 @@ class LocationServiceEdgeCaseTest extends TestCase
         $longAddress = 'House 123, Road 456, Block A, Section 789, Very Long Area Name, District Name, Division Name, Country, Postal Code 12345';
         $result = $this->service->geocode($longAddress);
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test geocode with only city name
@@ -125,7 +125,7 @@ class LocationServiceEdgeCaseTest extends TestCase
 
         $result = $this->service->geocode('Dhaka');
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test nearby with zero distance
@@ -136,7 +136,7 @@ class LocationServiceEdgeCaseTest extends TestCase
 
         $result = $this->service->nearby(90.3572, 23.8067, 0, 10);
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test nearby with very large distance
@@ -147,7 +147,7 @@ class LocationServiceEdgeCaseTest extends TestCase
 
         $result = $this->service->nearby(90.3572, 23.8067, 100, 10); // 100km
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
         Http::assertSent(function ($request) {
             // Distance is in URL path: /nearby/{distance}/{limit}
             return str_contains($request->url(), '/nearby/100/10');
@@ -162,7 +162,7 @@ class LocationServiceEdgeCaseTest extends TestCase
 
         $result = $this->service->snapToRoad(23.8067, 90.3572);
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test snap to road with precise coordinates
@@ -172,7 +172,7 @@ class LocationServiceEdgeCaseTest extends TestCase
 
         $result = $this->service->snapToRoad(23.806525320635505, 90.36129978225671);
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
         Http::assertSent(function ($request) {
             return str_contains($request->url(), 'point=');
         });

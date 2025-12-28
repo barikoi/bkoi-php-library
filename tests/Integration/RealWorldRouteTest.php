@@ -1,8 +1,8 @@
 <?php
 
-namespace Vendor\BarikoiApi\Tests\Integration;
+namespace Barikoi\BarikoiApis\Tests\Integration;
 
-use Vendor\BarikoiApi\Facades\Barikoi;
+use Barikoi\BarikoiApis\Facades\Barikoi;
 
 /**
  * Real-world integration tests for route services
@@ -15,9 +15,11 @@ class RealWorldRouteTest extends IntegrationTestCase
     /**
      * Check if route endpoint is available
      */
-    protected function skipIfRouteNotAvailable(array $result): void
+    protected function skipIfRouteNotAvailable(object|array $result): void
     {
-        if (!isset($result['code']) || (isset($result['message']) && strpos($result['message'], 'not be found') !== false)) {
+        $data = is_object($result) ? get_object_vars($result) : $result;
+
+        if (!isset($data['code']) || (isset($data['message']) && strpos($data['message'], 'not be found') !== false)) {
             $this->markTestSkipped('Route endpoint not available in current API plan. Contact Barikoi to enable routing features.');
         }
     }
@@ -36,23 +38,23 @@ class RealWorldRouteTest extends IntegrationTestCase
             90.4125, 23.7925  // Gulshan
         );
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
         $this->skipIfRouteNotAvailable($result);
 
-        $this->assertEquals('Ok', $result['code']);
-        $this->assertArrayHasKey('routes', $result);
-        $this->assertNotEmpty($result['routes']);
-        
-        $route = $result['routes'][0];
-        $this->assertArrayHasKey('distance', $route);
-        $this->assertIsNumeric($route['distance']);
+        $this->assertEquals('Ok', $result->code);
+        $this->assertNotEmpty($result->routes);
+
+        $route = $result->routes[0];
+        $routeArray = is_object($route) ? get_object_vars($route) : $route;
+        $this->assertArrayHasKey('distance', $routeArray);
+        $this->assertIsNumeric($routeArray['distance']);
 
         // Distance should be reasonable (5-15 km)
-        $this->assertGreaterThan(5000, $route['distance']); // > 5km
-        $this->assertLessThan(15000, $route['distance']); // < 15km
+        $this->assertGreaterThan(5000, $routeArray['distance']); // > 5km
+        $this->assertLessThan(15000, $routeArray['distance']); // < 15km
 
-        echo "\n✓ Distance from Mirpur to Gulshan: " . round($route['distance'] / 1000, 2) . " km\n";
-        echo "  Duration: " . round($route['duration'] / 60, 1) . " minutes\n";
+        echo "\n✓ Distance from Mirpur to Gulshan: " . round($routeArray['distance'] / 1000, 2) . " km\n";
+        echo "  Duration: " . round($routeArray['duration'] / 60, 1) . " minutes\n";
     }
 
     /**
@@ -68,14 +70,14 @@ class RealWorldRouteTest extends IntegrationTestCase
             90.4177, 23.7337  // Motijheel
         );
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
         $this->skipIfRouteNotAvailable($result);
-        $this->assertEquals('Ok', $result['code']);
-        $this->assertArrayHasKey('routes', $result);
+        $this->assertEquals('Ok', $result->code);
 
-        $route = $result['routes'][0];
-        $distanceKm = round($route['distance'] / 1000, 2);
-        $durationMin = round($route['duration'] / 60, 1);
+        $route = $result->routes[0];
+        $routeArray = is_object($route) ? get_object_vars($route) : $route;
+        $distanceKm = round($routeArray['distance'] / 1000, 2);
+        $durationMin = round($routeArray['duration'] / 60, 1);
 
         echo "\n✓ Route from Shahbagh to Motijheel:\n";
         echo "  Distance: {$distanceKm} km\n";
@@ -99,7 +101,7 @@ class RealWorldRouteTest extends IntegrationTestCase
 
         try {
             $result = Barikoi::route()->match($points);
-        } catch (\Vendor\BarikoiApi\Exceptions\BarikoiApiException $e) {
+        } catch (\Barikoi\BarikoiApis\Exceptions\BarikoiApiException $e) {
             // Route matching endpoint not available in current API version
             if (strpos($e->getMessage(), 'could not be found') !== false) {
                 $this->markTestSkipped('Route matching endpoint not available in current API version');
@@ -108,7 +110,7 @@ class RealWorldRouteTest extends IntegrationTestCase
             throw $e;
         }
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
 
         // Check if route matching is available
         if (!isset($result['code']) || (isset($result['message']) && strpos($result['message'], 'not be found') !== false)) {
@@ -146,12 +148,14 @@ class RealWorldRouteTest extends IntegrationTestCase
         $result = Barikoi::routeOverview($waypoints);
 
         $this->skipIfRouteNotAvailable($result);
-        $this->assertEquals('Ok', $result['code']);
+        $this->assertEquals('Ok', $result->code);
 
         echo "\n✓ Calculated route with " . count($waypoints) . " waypoints\n";
         echo "  From: Central Dhaka → Mirpur\n";
-        if (isset($result['routes'][0])) {
-            $distanceKm = round($result['routes'][0]['distance'] / 1000, 2);
+        if (isset($result->routes[0])) {
+            $route = $result->routes[0];
+            $routeArray = is_object($route) ? get_object_vars($route) : $route;
+            $distanceKm = round($routeArray['distance'] / 1000, 2);
             echo "  Total distance: {$distanceKm} km\n";
         }
     }
@@ -171,10 +175,11 @@ class RealWorldRouteTest extends IntegrationTestCase
         );
 
         $this->skipIfRouteNotAvailable($result);
-        $this->assertEquals('Ok', $result['code']);
+        $this->assertEquals('Ok', $result->code);
 
-        $route = $result['routes'][0];
-        $duration = round($route['duration'] / 60, 1);
+        $route = $result->routes[0];
+        $routeArray = is_object($route) ? get_object_vars($route) : $route;
+        $duration = round($routeArray['duration'] / 60, 1);
         echo "\n✓ Current route duration: {$duration} minutes\n";
         echo "  (Duration may vary with traffic conditions)\n";
     }
@@ -193,14 +198,15 @@ class RealWorldRouteTest extends IntegrationTestCase
         );
 
         $this->skipIfRouteNotAvailable($result);
-        $this->assertEquals('Ok', $result['code']);
+        $this->assertEquals('Ok', $result->code);
 
-        $route = $result['routes'][0];
-        $distanceKm = round($route['distance'] / 1000, 2);
+        $route = $result->routes[0];
+        $routeArray = is_object($route) ? get_object_vars($route) : $route;
+        $distanceKm = round($routeArray['distance'] / 1000, 2);
 
         // Dhaka to Chittagong is approximately 240-260 km
-        $this->assertGreaterThan(200000, $route['distance']);
-        $this->assertLessThan(300000, $route['distance']);
+        $this->assertGreaterThan(200000, $routeArray['distance']);
+        $this->assertLessThan(300000, $routeArray['distance']);
 
         echo "\n✓ Long distance route: Dhaka to Chittagong\n";
         echo "  Distance: {$distanceKm} km\n";
@@ -221,11 +227,11 @@ class RealWorldRouteTest extends IntegrationTestCase
         );
 
         $this->skipIfRouteNotAvailable($result);
-        $this->assertEquals('Ok', $result['code']);
+        $this->assertEquals('Ok', $result->code);
 
         echo "\n✓ Requested alternative routes\n";
         echo "  From: Central Dhaka to Gulshan\n";
-        echo "  Routes found: " . count($result['routes']) . "\n";
+        echo "  Routes found: " . count($result->routes) . "\n";
     }
 
     /**
@@ -246,7 +252,7 @@ class RealWorldRouteTest extends IntegrationTestCase
         $duration = microtime(true) - $startTime;
 
         $this->skipIfRouteNotAvailable($result);
-        $this->assertEquals('Ok', $result['code']);
+        $this->assertEquals('Ok', $result->code);
 
         echo "\n✓ Route calculation completed in " . round($duration, 3) . " seconds\n";
 
@@ -269,11 +275,12 @@ class RealWorldRouteTest extends IntegrationTestCase
         );
 
         $this->skipIfRouteNotAvailable($result);
-        $this->assertEquals('Ok', $result['code']);
-        
-        $route = $result['routes'][0];
-        $distanceKm = round($route['distance'] / 1000, 2);
-        $durationMin = round($route['duration'] / 60, 1);
+        $this->assertEquals('Ok', $result->code);
+
+        $route = $result->routes[0];
+        $routeArray = is_object($route) ? get_object_vars($route) : $route;
+        $distanceKm = round($routeArray['distance'] / 1000, 2);
+        $durationMin = round($routeArray['duration'] / 60, 1);
 
         echo "\n✓ Car route calculated\n";
         echo "  Distance: {$distanceKm} km\n";
@@ -295,18 +302,19 @@ class RealWorldRouteTest extends IntegrationTestCase
         );
 
         $this->skipIfRouteNotAvailable($result);
-        $this->assertEquals('Ok', $result['code']);
-        
-        $route = $result['routes'][0];
-        $distanceKm = round($route['distance'] / 1000, 2);
-        $durationMin = round($route['duration'] / 60, 1);
+        $this->assertEquals('Ok', $result->code);
+
+        $route = $result->routes[0];
+        $routeArray = is_object($route) ? get_object_vars($route) : $route;
+        $distanceKm = round($routeArray['distance'] / 1000, 2);
+        $durationMin = round($routeArray['duration'] / 60, 1);
 
         echo "\n✓ Walking route calculated\n";
         echo "  Distance: {$distanceKm} km\n";
         echo "  Duration: {$durationMin} minutes (walking)\n";
-        
+
         // Walking should take longer than driving
-        $this->assertGreaterThan(0, $route['duration']);
+        $this->assertGreaterThan(0, $routeArray['duration']);
     }
 
     /**
@@ -333,11 +341,16 @@ class RealWorldRouteTest extends IntegrationTestCase
             ['profile' => 'foot']
         );
 
-        $this->assertEquals('Ok', $carResult['code']);
-        $this->assertEquals('Ok', $footResult['code']);
+        $this->assertEquals('Ok', $carResult->code);
+        $this->assertEquals('Ok', $footResult->code);
 
-        $carDuration = $carResult['routes'][0]['duration'];
-        $footDuration = $footResult['routes'][0]['duration'];
+        $carRoute = $carResult->routes[0];
+        $footRoute = $footResult->routes[0];
+        $carRouteArray = is_object($carRoute) ? get_object_vars($carRoute) : $carRoute;
+        $footRouteArray = is_object($footRoute) ? get_object_vars($footRoute) : $footRoute;
+
+        $carDuration = $carRouteArray['duration'];
+        $footDuration = $footRouteArray['duration'];
 
         echo "\n✓ Profile comparison:\n";
         echo "  Car: " . round($carDuration / 60, 1) . " minutes\n";
@@ -389,13 +402,18 @@ class RealWorldRouteTest extends IntegrationTestCase
             ['profile' => 'car']
         );
 
-        $this->assertEquals('Ok', $defaultResult['code']);
-        $this->assertEquals('Ok', $carResult['code']);
+        $this->assertEquals('Ok', $defaultResult->code);
+        $this->assertEquals('Ok', $carResult->code);
 
         // Both should return similar durations (within 10% tolerance)
-        $defaultDuration = $defaultResult['routes'][0]['duration'];
-        $carDuration = $carResult['routes'][0]['duration'];
-        
+        $defaultRoute = $defaultResult->routes[0];
+        $carRoute = $carResult->routes[0];
+        $defaultRouteArray = is_object($defaultRoute) ? get_object_vars($defaultRoute) : $defaultRoute;
+        $carRouteArray = is_object($carRoute) ? get_object_vars($carRoute) : $carRoute;
+
+        $defaultDuration = $defaultRouteArray['duration'];
+        $carDuration = $carRouteArray['duration'];
+
         $difference = abs($defaultDuration - $carDuration);
         $tolerance = $carDuration * 0.1; // 10% tolerance
 

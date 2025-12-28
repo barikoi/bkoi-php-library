@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendor\BarikoiApi;
+namespace Barikoi\BarikoiApis;
 
 use Illuminate\Support\ServiceProvider;
 

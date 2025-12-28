@@ -6,3 +6,5 @@ composer.lock
 Thumbs.db
 .cursorrules
 .env
+node_modules
+.claude

@@ -1,11 +1,11 @@
 <?php
 
-namespace Vendor\BarikoiApi;
+namespace Barikoi\BarikoiApis;
 
-use Vendor\BarikoiApi\Services\AdministrativeService;
-use Vendor\BarikoiApi\Services\GeofenceService;
-use Vendor\BarikoiApi\Services\LocationService;
-use Vendor\BarikoiApi\Services\RouteService;
+use Barikoi\BarikoiApis\Exceptions\BarikoiValidationException;
+use Barikoi\BarikoiApis\Services\GeofenceService;
+use Barikoi\BarikoiApis\Services\LocationService;
+use Barikoi\BarikoiApis\Services\RouteService;
 
 /**
  * Main Barikoi SDK - Your gateway to all Barikoi services
@@ -15,7 +15,6 @@ class Barikoi
     protected BarikoiClient $client;
     protected ?LocationService $locationService = null;
     protected ?RouteService $routeService = null;
-    protected ?AdministrativeService $administrativeService = null;
     protected ?GeofenceService $geofenceService = null;
 
     public function __construct(?string $apiKey = null, ?string $baseUrl = null)
@@ -41,15 +40,6 @@ class Barikoi
         return $this->routeService;
     }
 
-    // Get administrative service (divisions, districts, thanas)
-    public function administrative(): AdministrativeService
-    {
-        if (!$this->administrativeService) {
-            $this->administrativeService = new AdministrativeService($this->client);
-        }
-        return $this->administrativeService;
-    }
-
     // Get geofence service (boundaries, zones)
     public function geofence(): GeofenceService
     {
@@ -64,73 +54,65 @@ class Barikoi
     // ============================================================================
 
     // Convert coordinates to address
-    public function reverseGeocode(float $longitude, float $latitude, array $options = []): array
+    // Returns object (stdClass) matching Barikoi API response format
+    public function reverseGeocode(float $longitude, float $latitude, array $options = []): object
     {
         return $this->location()->reverseGeocode($longitude, $latitude, $options);
     }
 
     // Get place suggestions as user types
-    public function autocomplete(string $query, array $options = []): array
+    // Returns object (stdClass) matching Barikoi autocomplete response format
+    public function autocomplete(string $query, array $options = []): object
     {
         return $this->location()->autocomplete($query, $options);
     }
 
     // Search for places by query
-    public function searchPlace(string $query, array $options = []): array
+    // Returns object (stdClass) matching Barikoi search-place API response format
+    public function searchPlace(string $query, array $options = []): object
     {
         return $this->location()->searchPlace($query, $options);
     }
 
-    // Convert address to coordinates
-    public function geocode(string $address, array $options = []): array
+    // Convert address to coordinates (Rupantor)
+    // Returns object (stdClass) matching Barikoi API response format
+    public function geocode(string $address, array $options = []): object
     {
         return $this->location()->geocode($address, $options);
     }
 
-    // Get place details by place_code
-    // Optional session_id can be provided in options
-    public function getPlaceDetails(string $placeCode, array $options = []): array
-    {
-        return $this->location()->getPlaceDetails($placeCode, $options);
-    }
+    // // Get place details by place_code
+    // // Optional session_id can be provided in options
+    // public function getPlaceDetails(string $placeCode, array $options = []): array
+    // {
+    //     return $this->location()->getPlaceDetails($placeCode, $options);
+    // }
 
-    // Alias for getPlaceDetails to support Barikoi::placeDetails(...)
-    public function placeDetails(string $placeCode, array $options = []): array
-    {
-        return $this->getPlaceDetails($placeCode, $options);
-    }
+    // // Alias for getPlaceDetails to support Barikoi::placeDetails(...)
+    // public function placeDetails(string $placeCode, array $options = []): array
+    // {
+    //     return $this->getPlaceDetails($placeCode, $options);
+    // }
 
     // Snap GPS coordinates to nearest road
-    public function snapToRoad(float $latitude, float $longitude): array
+    public function snapToRoad(float $latitude, float $longitude): object
     {
         return $this->location()->snapToRoad($latitude, $longitude);
     }
 
     // Find places within radius
     // Distance in kilometers (e.g., 0.5 = 500 meters), limit is max results
-    public function nearby(float $longitude, float $latitude, float $distance = 0.5, int $limit = 10, array $options = []): array
+    public function nearby(float $longitude, float $latitude, float $distance = 0.5, int $limit = 10, array $options = []): object
     {
         return $this->location()->nearby($longitude, $latitude, $distance, $limit, $options);
     }
 
-    // Find places of specific category nearby
-    // Distance in kilometers (e.g., 1.0 = 1000 meters), limit is max results
-    public function nearbyWithCategory(float $longitude, float $latitude, string $category, float $distance = 1.0, int $limit = 10): array
+    // Check nearby location within a specified radius
+    // Determine if a current location is within a specified radius of a destination point
+    // Radius in meters (default 50m)
+    public function checkNearby(float $destinationLatitude,float $destinationLongitude,float $currentLatitude,float $currentLongitude,float $radius = 50): array|object
     {
-        return $this->location()->nearbyWithCategory($longitude, $latitude, $category, $distance, $limit);
-    }
-
-    // Find multiple types of places nearby
-    // Distance in kilometers (e.g., 5.0 = 5000 meters), limit is max results
-    public function nearbyWithTypes(float $longitude, float $latitude, array $types, float $distance = 5.0, int $limit = 5): array
-    {
-        return $this->location()->nearbyWithTypes($longitude, $latitude, $types, $distance, $limit);
-    }
-
-    // Check if point is inside polygon
-    public function pointInPolygon(float $longitude, float $latitude, array $polygon): array
-    {
-        return $this->location()->pointInPolygon($longitude, $latitude, $polygon);
+        return $this->geofence()->checkNearby($destinationLatitude, $destinationLongitude, $currentLatitude, $currentLongitude, $radius);
     }
 
     // ============================================================================
@@ -138,26 +120,108 @@ class Barikoi
     // ============================================================================
 
     // Simple route overview between multiple points
-    public function routeOverview(array $points, array $options = []): array
+    // Returns object (stdClass) matching Barikoi route API response format
+    public function routeOverview(array $points, array $options = []): object
     {
         return $this->route()->routeOverview($points, $options);
     }
 
-    // Calculate detailed route between points (turn-by-turn style response)
-    public function calculateRoute(array $points, array $options = []): array
+    // Calculate detailed route with navigation instructions
+    // Returns object (stdClass) matching Barikoi routing API response format (with "trip" object)
+    // Accepts start/destination object format
+    public function calculateRoute(array $startDestination, array $options = []): object
     {
-        return $this->route()->detailed($points, $options);
+        // Validate and extract coordinates from start/destination pattern
+        $this->validateStartDestinationFormat($startDestination);
+        
+        $start = $startDestination['start'];
+        $destination = $startDestination['destination'];
+        
+        // Call RouteService::calculateRoute with individual coordinates
+        return $this->route()->calculateRoute(
+            $start['latitude'],
+            $start['longitude'],
+            $destination['latitude'],
+            $destination['longitude'],
+            $options
+        );
+    }
+    
+    /**
+     * Validate start/destination format for calculateRoute
+     *
+     * @param array $data Array with 'start' and 'destination' keys
+     * @throws BarikoiValidationException
+     */
+    protected function validateStartDestinationFormat(array $data): void
+    {
+        if (!isset($data['start']) || !is_array($data['start'])) {
+            throw new BarikoiValidationException(
+                'Invalid format: "start" key is required and must be an array with "longitude" and "latitude" keys.'
+            );
+        }
+        
+        if (!isset($data['destination']) || !is_array($data['destination'])) {
+            throw new BarikoiValidationException(
+                'Invalid format: "destination" key is required and must be an array with "longitude" and "latitude" keys.'
+            );
+        }
+        
+        $start = $data['start'];
+        $destination = $data['destination'];
+        
+        // Validate start coordinates
+        if (!isset($start['longitude']) || !isset($start['latitude'])) {
+            throw new BarikoiValidationException(
+                'Invalid format: "start" must contain "longitude" and "latitude" keys.'
+            );
+        }
+        
+        if (!is_numeric($start['longitude']) || !is_numeric($start['latitude'])) {
+            throw new BarikoiValidationException(
+                'Invalid coordinates: "start" longitude and latitude must be numeric.'
+            );
+        }
+        
+        // Validate destination coordinates
+        if (!isset($destination['longitude']) || !isset($destination['latitude'])) {
+            throw new BarikoiValidationException(
+                'Invalid format: "destination" must contain "longitude" and "latitude" keys.'
+            );
+        }
+        
+        if (!is_numeric($destination['longitude']) || !is_numeric($destination['latitude'])) {
+            throw new BarikoiValidationException(
+                'Invalid coordinates: "destination" longitude and latitude must be numeric.'
+            );
+        }
+        
+        // Validate coordinate ranges
+        if ($start['latitude'] < -90 || $start['latitude'] > 90 || 
+            $start['longitude'] < -180 || $start['longitude'] > 180) {
+            throw new BarikoiValidationException(
+                'Invalid coordinates: "start" latitude must be between -90 and 90, longitude between -180 and 180.'
+            );
+        }
+        
+        if ($destination['latitude'] < -90 || $destination['latitude'] > 90 || 
+            $destination['longitude'] < -180 || $destination['longitude'] > 180) {
+            throw new BarikoiValidationException(
+                'Invalid coordinates: "destination" latitude must be between -90 and 90, longitude between -180 and 180.'
+            );
+        }
     }
 
     // Calculate detailed navigation route (separate routing API)
+    // Calculate detailed navigation route (separate routing API, returns stdClass with \"trip\")
     public function detailedNavigation(
         float $startLatitude,
         float $startLongitude,
         float $destinationLatitude,
         float $destinationLongitude,
         array $options = []
-    ): array {
-        return $this->route()->detailedNavigation(
+    ): object {
+        return $this->route()->calculateRoute(
             $startLatitude,
             $startLongitude,
             $destinationLatitude,
@@ -166,15 +230,16 @@ class Barikoi
         );
     }
 
-    // Calculate optimized route with waypoints (up to 50)
-    public function optimizedRoute(string $source, string $destination, array $waypoints = [], array $options = []): array
+        /**
+     * Get detailed place information using place_code (v2)
+     * Shortcut for location()->getPlaceDetails()
+     *
+     * @param string $placeCode The place_code from search results (e.g., 'BKOI2017')
+     * @param array $options Optional params like ['session_id' => '...']
+     * @return array Detailed place response
+     */
+    public function placeDetails(string $placeCode, array $options = []): object
     {
-        return $this->route()->optimizedRoute($source, $destination, $waypoints, $options);
-    }
-
-    // Optimize route for multiple waypoints (TSP solution)
-    public function routeOptimize(array $points, array $options = []): array
-    {
-        return $this->route()->routeOptimize($points, $options);
+        return $this->location()->placeDetails($placeCode, $options);
     }
 }

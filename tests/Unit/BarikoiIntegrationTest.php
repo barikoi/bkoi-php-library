@@ -1,13 +1,13 @@
 <?php
 
-namespace Vendor\BarikoiApi\Tests\Unit;
+namespace Barikoi\BarikoiApis\Tests\Unit;
 
-use Vendor\BarikoiApi\Tests\TestCase;
-use Vendor\BarikoiApi\Barikoi;
-use Vendor\BarikoiApi\Services\LocationService;
-use Vendor\BarikoiApi\Services\RouteService;
-use Vendor\BarikoiApi\Services\AdministrativeService;
-use Vendor\BarikoiApi\Services\GeofenceService;
+use Barikoi\BarikoiApis\Tests\TestCase;
+use Barikoi\BarikoiApis\Barikoi;
+use Barikoi\BarikoiApis\Services\LocationService;
+use Barikoi\BarikoiApis\Services\RouteService;
+use Barikoi\BarikoiApis\Services\AdministrativeService;
+use Barikoi\BarikoiApis\Services\GeofenceService;
 use Illuminate\Support\Facades\Http;
 
 class BarikoiIntegrationTest extends TestCase
@@ -64,7 +64,7 @@ class BarikoiIntegrationTest extends TestCase
 
         $result = $this->barikoi->reverseGeocode(90.3572, 23.8067);
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test direct autocomplete method works
@@ -74,7 +74,7 @@ class BarikoiIntegrationTest extends TestCase
 
         $result = $this->barikoi->autocomplete('Dhanmondi');
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test direct geocode method works
@@ -84,7 +84,7 @@ class BarikoiIntegrationTest extends TestCase
 
         $result = $this->barikoi->geocode('Dhanmondi, Dhaka');
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test direct searchPlace method works
@@ -94,7 +94,7 @@ class BarikoiIntegrationTest extends TestCase
 
         $result = $this->barikoi->searchPlace('restaurant');
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test direct snapToRoad method works
@@ -105,7 +105,7 @@ class BarikoiIntegrationTest extends TestCase
 
         $result = $this->barikoi->snapToRoad(23.8067, 90.3572);
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test direct nearby method works
@@ -116,7 +116,7 @@ class BarikoiIntegrationTest extends TestCase
 
         $result = $this->barikoi->nearby(90.3572, 23.8067, 1.0, 10);
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test both direct and service methods return same result
@@ -142,9 +142,9 @@ class BarikoiIntegrationTest extends TestCase
         $result2 = $this->barikoi->autocomplete('Dhaka');
         $result3 = $this->barikoi->searchPlace('restaurant');
 
-        $this->assertIsArray($result1);
-        $this->assertIsArray($result2);
-        $this->assertIsArray($result3);
+        $this->assertIsObject($result1);
+        $this->assertIsObject($result2);
+        $this->assertIsObject($result3);
     }
 
     // Test creating instance without API key uses config

@@ -1,9 +1,9 @@
 <?php
 
-namespace Vendor\BarikoiApi\Tests;
+namespace Barikoi\BarikoiApis\Tests;
 
 use Orchestra\Testbench\TestCase as Orchestra;
-use Vendor\BarikoiApi\BarikoiServiceProvider;
+use Barikoi\BarikoiApis\BarikoiServiceProvider;
 use Illuminate\Support\Facades\Http;
 
 class TestCase extends Orchestra
@@ -14,6 +14,27 @@ class TestCase extends Orchestra
      * @var \Illuminate\Testing\TestResponse|null
      */
     public static $latestResponse;
+
+    /**
+     * Track if .env file has been loaded
+     *
+     * @var bool
+     */
+    protected static $envLoaded = false;
+
+    public static function setUpBeforeClass(): void
+    {
+        parent::setUpBeforeClass();
+
+        // Load .env file for local testing (if not already loaded and file exists)
+        if (!static::$envLoaded && file_exists(__DIR__ . '/../.env')) {
+            if (class_exists(\Dotenv\Dotenv::class)) {
+                $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+                $dotenv->safeLoad(); // safeLoad won't override existing env vars
+                static::$envLoaded = true;
+            }
+        }
+    }
 
     protected function setUp(): void
     {
@@ -43,7 +64,7 @@ class TestCase extends Orchestra
         ]);
 
         // Setup Barikoi configuration
-        $app['config']->set('barikoi.api_key', env('BARIKOI_API_KEY', 'test_api_key'));
-        $app['config']->set('barikoi.base_url', env('BARIKOI_BASE_URL', 'https://barikoi.xyz/v2/api'));
+        $app['config']->set('barikoi.api_key', env('BARIKOI_API_KEY', 'bkoi_aba4dcd19f34e638f43d72fd857586e72927c07d7e21b7102cc9757cdd7ce5d6'));
+        $app['config']->set('barikoi.base_url', env('BARIKOI_BASE_URL', 'https://barikoi.xyz/'));
     }
 }

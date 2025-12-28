@@ -1,8 +1,8 @@
 <?php
 
-namespace Vendor\BarikoiApi\Tests\Integration;
+namespace Barikoi\BarikoiApis\Tests\Integration;
 
-use Vendor\BarikoiApi\Facades\Barikoi;
+use Barikoi\BarikoiApis\Facades\Barikoi;
 
 /**
  * Integration tests that work with real Barikoi API
@@ -23,17 +23,17 @@ class RealApiWorkingTest extends IntegrationTestCase
     {
         $result = Barikoi::reverseGeocode(90.3957, 23.7386);
 
-        $this->assertIsArray($result);
-        $this->assertEquals(200, $result['status']);
-        $this->assertArrayHasKey('place', $result);
+        $this->assertIsObject($result);
+        $this->assertEquals(200, $result->status);
+        $this->assertObjectHasProperty('place', $result);
 
-        $place = $result['place'];
-        $this->assertArrayHasKey('address', $place);
-        $this->assertArrayHasKey('area', $place);
-        $this->assertArrayHasKey('city', $place);
+        $place = $result->place;
+        $this->assertObjectHasProperty('address', $place);
+        $this->assertObjectHasProperty('area', $place);
+        $this->assertObjectHasProperty('city', $place);
 
-        echo "\n✓ Address: {$place['address']}\n";
-        echo "  Area: {$place['area']}, City: {$place['city']}\n";
+        echo "\n✓ Address: {$place->address}\n";
+        echo "  Area: {$place->area}, City: {$place->city}\n";
     }
 
     /**
@@ -49,24 +49,24 @@ class RealApiWorkingTest extends IntegrationTestCase
             'post_code' => true,
         ]);
 
-        $this->assertEquals(200, $result['status']);
-        $this->assertArrayHasKey('place', $result);
+        $this->assertEquals(200, $result->status);
+        $this->assertObjectHasProperty('place', $result);
 
-        $place = $result['place'];
+        $place = $result->place;
 
         // These fields are always present
-        $this->assertArrayHasKey('address', $place);
-        $this->assertArrayHasKey('city', $place);
+        $this->assertObjectHasProperty('address', $place);
+        $this->assertObjectHasProperty('city', $place);
 
-        echo "\n✓ Address: {$place['address']}\n";
-        echo "  City: {$place['city']}\n";
+        echo "\n✓ Address: {$place->address}\n";
+        echo "  City: {$place->city}\n";
 
         // District and postCode may be present when requested
-        if (isset($place['district'])) {
-            echo "  District: {$place['district']}\n";
+        if (isset($place->district)) {
+            echo "  District: {$place->district}\n";
         }
-        if (isset($place['postCode'])) {
-            echo "  Post Code: {$place['postCode']}\n";
+        if (isset($place->postCode)) {
+            echo "  Post Code: {$place->postCode}\n";
         }
     }
 
@@ -80,17 +80,19 @@ class RealApiWorkingTest extends IntegrationTestCase
     {
         $result = Barikoi::autocomplete('Gulshan');
 
-        $this->assertIsArray($result);
-        $this->assertEquals(200, $result['status']);
-        $this->assertArrayHasKey('places', $result);
-        $this->assertIsArray($result['places']);
-        $this->assertNotEmpty($result['places']);
+        $this->assertIsObject($result);
+        if (isset($result->status)) {
+            $this->assertEquals(200, $result->status);
+        }
+        $this->assertObjectHasProperty('places', $result);
+        $this->assertIsArray($result->places);
+        $this->assertNotEmpty($result->places);
 
-        echo "\n✓ Found " . count($result['places']) . " places for 'Gulshan'\n";
+        echo "\n✓ Found " . count($result->places) . " places for 'Gulshan'\n";
 
-        if (!empty($result['places'])) {
-            $first = $result['places'][0];
-            echo "  First result: {$first['address']}\n";
+        if (!empty($result->places)) {
+            $first = $result->places[0];
+            echo "  First result: {$first->address}\n";
         }
     }
 
@@ -104,16 +106,17 @@ class RealApiWorkingTest extends IntegrationTestCase
     {
         $result = Barikoi::searchPlace('ঢাকা');
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
 
-        // Check if result has status or places key
-        if (isset($result['status'])) {
-            $this->assertEquals(200, $result['status']);
+        // Check if result has status or places property
+        if (isset($result->status)) {
+            $this->assertEquals(200, $result->status);
         }
 
-        if (isset($result['places']) && !empty($result['places'])) {
-            echo "\n✓ Search for 'ঢাকা' returned " . count($result['places']) . " results\n";
-            echo "  First result: {$result['places'][0]['address']}\n";
+        if (isset($result->places) && !empty($result->places)) {
+            $firstPlace = $result->places[0];
+            echo "\n✓ Search for 'ঢাকা' returned " . count($result->places) . " results\n";
+            echo "  First result: {$firstPlace->address}\n";
         } else {
             echo "\n✓ Search for 'ঢাকা' completed (response structure may vary)\n";
         }
@@ -140,7 +143,7 @@ class RealApiWorkingTest extends IntegrationTestCase
 
         foreach ($coordinates as $coord) {
             $result = Barikoi::reverseGeocode($coord[0], $coord[1]);
-            if ($result['status'] === 200) {
+            if ($result->status === 200) {
                 $successCount++;
             }
         }
@@ -174,10 +177,10 @@ class RealApiWorkingTest extends IntegrationTestCase
         foreach ($locations as $location) {
             $result = Barikoi::reverseGeocode($location['lng'], $location['lat']);
 
-            $this->assertEquals(200, $result['status']);
-            $this->assertArrayHasKey('place', $result);
+            $this->assertEquals(200, $result->status);
+            $this->assertObjectHasProperty('place', $result);
 
-            echo "  {$location['name']}: {$result['place']['city']}\n";
+            echo "  {$location['name']}: {$result->place->city}\n";
         }
     }
 
@@ -195,7 +198,7 @@ class RealApiWorkingTest extends IntegrationTestCase
 
         $duration = microtime(true) - $startTime;
 
-        $this->assertEquals(200, $result['status']);
+        $this->assertEquals(200, $result->status);
         $this->assertLessThan(2, $duration, "API call took too long: {$duration} seconds");
 
         echo "\n✓ API response time: " . round($duration * 1000) . " ms\n";

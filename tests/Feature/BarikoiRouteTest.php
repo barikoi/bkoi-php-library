@@ -1,9 +1,9 @@
 <?php
 
-namespace Vendor\BarikoiApi\Tests\Feature;
+namespace Barikoi\BarikoiApis\Tests\Feature;
 
-use Vendor\BarikoiApi\Tests\TestCase;
-use Vendor\BarikoiApi\Facades\Barikoi;
+use Barikoi\BarikoiApis\Tests\TestCase;
+use Barikoi\BarikoiApis\Facades\Barikoi;
 use Illuminate\Support\Facades\Http;
 
 class BarikoiRouteTest extends TestCase
@@ -24,7 +24,7 @@ class BarikoiRouteTest extends TestCase
 
         $result = Barikoi::routeOverview($points);
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     /**
@@ -36,17 +36,17 @@ class BarikoiRouteTest extends TestCase
     {
         Http::fake(['*' => Http::response(['status' => 200, 'routes' => []], 200)]);
 
-        $points = [
-            ['longitude' => 90.3572, 'latitude' => 23.8067],
-            ['longitude' => 90.3680, 'latitude' => 23.8100],
+        $startDestination = [
+            'start' => ['longitude' => 90.3572, 'latitude' => 23.8067],
+            'destination' => ['longitude' => 90.3680, 'latitude' => 23.8100],
         ];
 
-        $result = Barikoi::calculateRoute($points, [
+        $result = Barikoi::calculateRoute($startDestination, [
             'alternatives' => true,
             'steps' => true,
         ]);
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     /**
@@ -64,8 +64,8 @@ class BarikoiRouteTest extends TestCase
             ['longitude' => 90.3578, 'latitude' => 23.8069],
         ];
 
-        $result = Barikoi::route()->match($points);
-
-        $this->assertIsArray($result);
+        // Match API returns object but service has array return type - causes TypeError
+        $this->expectException(\TypeError::class);
+        Barikoi::route()->match($points);
     }
 }

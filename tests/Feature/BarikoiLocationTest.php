@@ -1,9 +1,9 @@
 <?php
 
-namespace Vendor\BarikoiApi\Tests\Feature;
+namespace Barikoi\BarikoiApis\Tests\Feature;
 
-use Vendor\BarikoiApi\Tests\TestCase;
-use Vendor\BarikoiApi\Facades\Barikoi;
+use Barikoi\BarikoiApis\Tests\TestCase;
+use Barikoi\BarikoiApis\Facades\Barikoi;
 use Illuminate\Support\Facades\Http;
 
 class BarikoiLocationTest extends TestCase
@@ -18,8 +18,8 @@ class BarikoiLocationTest extends TestCase
             'bangla' => true,
         ]);
 
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('status', $result);
+        $this->assertIsObject($result);
+        $this->assertObjectHasProperty('status', $result);
     }
 
     // Test reverse geocoding direct call (without location()->)
@@ -32,8 +32,8 @@ class BarikoiLocationTest extends TestCase
             'post_code' => true,
         ]);
 
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('status', $result);
+        $this->assertIsObject($result);
+        $this->assertObjectHasProperty('status', $result);
     }
 
     // Test reverse geocoding with all options
@@ -56,7 +56,7 @@ class BarikoiLocationTest extends TestCase
             'thana' => true,
         ]);
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test autocomplete
@@ -66,7 +66,7 @@ class BarikoiLocationTest extends TestCase
 
         $result = Barikoi::location()->autocomplete('Dhanmondi');
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test autocomplete direct call
@@ -76,7 +76,7 @@ class BarikoiLocationTest extends TestCase
 
         $result = Barikoi::autocomplete('Gulshan');
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test geocoding
@@ -86,7 +86,8 @@ class BarikoiLocationTest extends TestCase
 
         $result = Barikoi::location()->geocode('Dhanmondi 27, Dhaka');
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
+        $this->assertObjectHasProperty('status', $result);
     }
 
     // Test geocoding direct call
@@ -96,7 +97,23 @@ class BarikoiLocationTest extends TestCase
 
         $result = Barikoi::geocode('Banani, Dhaka');
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
+        $this->assertObjectHasProperty('status', $result);
+    }
+
+    // Test geocoding with options
+    public function test_geocode_with_options()
+    {
+        Http::fake(['*' => Http::response(['status' => 200, 'geocoded_address' => []], 200)]);
+
+        $result = Barikoi::geocode('shawrapara', [
+            'thana' => true,
+            'district' => true,
+            'bangla' => true,
+        ]);
+
+        $this->assertIsObject($result);
+        $this->assertObjectHasProperty('status', $result);
     }
 
     // Test search place
@@ -106,7 +123,8 @@ class BarikoiLocationTest extends TestCase
 
         $result = Barikoi::location()->searchPlace('restaurant');
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
+        $this->assertObjectHasProperty('places', $result);
     }
 
     // Test search place direct call
@@ -116,7 +134,8 @@ class BarikoiLocationTest extends TestCase
 
         $result = Barikoi::searchPlace('hospital');
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
+        $this->assertObjectHasProperty('places', $result);
     }
 
     // Test search place with options
@@ -130,7 +149,7 @@ class BarikoiLocationTest extends TestCase
             'latitude' => 23.8067,
         ]);
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test nearby places
@@ -141,7 +160,7 @@ class BarikoiLocationTest extends TestCase
 
         $result = Barikoi::location()->nearby(90.3572, 23.8067, 1.0, 10);
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test nearby direct call
@@ -151,7 +170,7 @@ class BarikoiLocationTest extends TestCase
 
         $result = Barikoi::nearby(90.3572, 23.8067, 2.0, 10);
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test nearby with options
@@ -161,7 +180,7 @@ class BarikoiLocationTest extends TestCase
 
         $result = Barikoi::nearby(90.3572, 23.8067, 1.0, 20);
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test snap to road
@@ -172,7 +191,7 @@ class BarikoiLocationTest extends TestCase
 
         $result = Barikoi::location()->snapToRoad(23.8067, 90.3572);
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
     // Test snap to road direct call
@@ -182,7 +201,7 @@ class BarikoiLocationTest extends TestCase
 
         $result = Barikoi::snapToRoad(23.8067, 90.3572);
 
-        $this->assertIsArray($result);
+        $this->assertIsObject($result);
     }
 
 }

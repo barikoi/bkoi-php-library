@@ -1,8 +1,8 @@
 <?php
 
-namespace Vendor\BarikoiApi\Tests\Unit;
+namespace Barikoi\BarikoiApis\Tests\Unit;
 
-use Vendor\BarikoiApi\Tests\TestCase;
+use Barikoi\BarikoiApis\Tests\TestCase;
 
 /**
  * Test to verify Discord notifications are working

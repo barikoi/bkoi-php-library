@@ -1,11 +1,11 @@
 <?php
 
-namespace Vendor\BarikoiApi\Tests\Unit;
+namespace Barikoi\BarikoiApis\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use Vendor\BarikoiApi\BarikoiClient;
-use Vendor\BarikoiApi\Services\RouteService;
-use Vendor\BarikoiApi\Exceptions\BarikoiValidationException;
+use Barikoi\BarikoiApis\BarikoiClient;
+use Barikoi\BarikoiApis\Services\RouteService;
+use Barikoi\BarikoiApis\Exceptions\BarikoiValidationException;
 
 /**
  * Unit tests for RouteService profile validation

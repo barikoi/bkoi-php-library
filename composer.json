@@ -1,5 +1,5 @@
 {
-    "name": "barikoi/barikoi-api",
+    "name": "barikoi/barikoiapis",
     "description": "A comprehensive Laravel package for integrating Barikoi API - Bangladesh's leading location data provider",
     "type": "library",
     "license": "MIT",
@@ -7,7 +7,7 @@
     "authors": [
         {
             "name": "Barikoi",
-            "email": "info@barikoi.com"
+            "email": "hello@barikoi.com"
         }
     ],
     "require": {
@@ -18,16 +18,17 @@
     },
     "require-dev": {
         "orchestra/testbench": "^8.0|^9.0",
-        "phpunit/phpunit": "^10.0"
+        "phpunit/phpunit": "^10.0",
+        "vlucas/phpdotenv": "^5.5"
     },
     "autoload": {
         "psr-4": {
-            "Vendor\\BarikoiApi\\": "src/"
+            "Barikoi\\BarikoiApis\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Vendor\\BarikoiApi\\Tests\\": "tests/"
+            "Barikoi\\BarikoiApis\\Tests\\": "tests/"
         }
     },
     "scripts": {
@@ -45,10 +46,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Vendor\\BarikoiApi\\BarikoiServiceProvider"
+                "Barikoi\\BarikoiApis\\BarikoiServiceProvider"
             ],
             "aliases": {
-                "Barikoi": "Vendor\\BarikoiApi\\Facades\\Barikoi"
+                "Barikoi": "Barikoi\\BarikoiApis\\Facades\\Barikoi"
             }
         }
     },

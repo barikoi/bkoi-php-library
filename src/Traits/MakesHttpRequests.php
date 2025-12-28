@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendor\BarikoiApi\Traits;
+namespace Barikoi\BarikoiApis\Traits;
 
 use Illuminate\Support\Facades\Http;
 
@@ -23,7 +23,6 @@ trait MakesHttpRequests
      * @param array $params
      * @return array
      */
-    
     protected function get(string $endpoint, array $params = []): array
     {
         $params['api_key'] = $this->apiKey;
