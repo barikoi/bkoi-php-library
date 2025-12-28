@@ -15,7 +15,7 @@ All notable changes to this package will be documented in this file.
   - Get place details by ID
   - Snap to Road for GPS correction
   - Nearby search
-  - Point in Polygon check
+  - Check Nearby
 - RouteService with the following features:
   - Route overview
   - Detailed route calculation
