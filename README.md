@@ -282,5 +282,5 @@ The MIT License (MIT). See [License File](LICENSE.md) for more information.
 For issues or questions:
 - Create an issue on GitHub
 - Check the detailed API documentation in `docs/` folder
-- Direct support is not currently available
+- Contact support@barikoi.com for any support
 
