@@ -121,7 +121,9 @@ Complete documentation with parameters, conditions, and error handling for each 
 | - Geocoding (Rupantor) | Convert address to coordinates |
 | - Autocomplete | Place suggestions |
 | - Search Place | Text-based place search |
+| - Place Details | Get Place Details |
 | - Nearby Search | Find places within radius |
+| - Check Nearby | Check nearby location within a specified radius |
 | - Snap to Road | Correct GPS coordinates |
 | | |
 | **Routing Services** | [docs/routing-api.md](docs/routing-api.md) |
@@ -234,8 +236,8 @@ public function calculateRoute(Request $request)
 {
     try {
         $route = Barikoi::calculateRoute([
-            'start' => ['longitude' => 90.36558776260725, 'latitude' => 23.791645065364126],
-            'destination' => ['longitude' => 90.3676300089066, 'latitude' => 23.784715477921843],
+            'start' => ['longitude' => $request->start_longitude, 'latitude' => $request->start_latitude],
+            'destination' => ['longitude' => $request->destination_longitude, 'latitude' => $request->destination_latitude],
         ], [
             'type' => 'vh',
             'profile' => 'motorcycle'
