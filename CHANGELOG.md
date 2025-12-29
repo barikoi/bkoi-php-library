@@ -2,7 +2,7 @@
 
 All notable changes to this package will be documented in this file.
 
-## [1.0.0] - 2025-11-25
+## [v2.0.0] - 2025-12-28
 
 ### Added
 - Initial release of Barikoi Laravel Package
@@ -12,7 +12,7 @@ All notable changes to this package will be documented in this file.
   - Geocoding (address to coordinates) via Rupantor
   - Autocomplete for place suggestions
   - Place search functionality
-  - Get place details by ID
+  - Get place details
   - Snap to Road for GPS correction
   - Nearby search
   - Check Nearby
